@@ -1,0 +1,43 @@
+﻿<UserControl
+    x:Class="LoopbackManager.App.Controls.AppTitleBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:ext="using:LoopbackManager.App.Resources.Extensions"
+    xmlns:local="using:LoopbackManager.App.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Padding="16,0,0,0" ColumnSpacing="8">
+        <Grid.ColumnDefinitions>
+            <!-- Logo -->
+            <ColumnDefinition x:Name="LogoColumn" Width="Auto" />
+            <!-- Flex -->
+            <ColumnDefinition x:Name="FlexColumn" Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Rectangle
+            x:Name="TitleBarHost"
+            Grid.ColumnSpan="2"
+            MinHeight="32"
+            Fill="Transparent" />
+
+        <StackPanel
+            x:Name="LogoArea"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            IsHitTestVisible="False"
+            Orientation="Horizontal"
+            Spacing="16">
+            <Image
+                Width="16"
+                Height="16"
+                Source="ms-appx:///Assets/logo_small.png" />
+            <TextBlock
+                x:Name="AppNameBlock"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                VerticalAlignment="Center"
+                Text="{ext:Locale Name=AppName}" />
+        </StackPanel>
+    </Grid>
+</UserControl>
