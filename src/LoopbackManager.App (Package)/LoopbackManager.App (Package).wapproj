@@ -111,6 +111,8 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <PRIResource Include="Strings\en-US\Resources.resw" />
+    <PRIResource Include="Strings\zh-Hant\Resources.resw" />
     <None Include="LoopbackManager.App_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
