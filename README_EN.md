@@ -9,8 +9,6 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/Richasy/LoopbackManager.Desktop)](https://github.com/Richasy/LoopbackManager.Desktop/releases) ![GitHub Release Date](https://img.shields.io/github/release-date/Richasy/LoopbackManager.Desktop) ![GitHub All Releases](https://img.shields.io/github/downloads/Richasy/LoopbackManager.Desktop/total) ![GitHub stars](https://img.shields.io/github/stars/Richasy/LoopbackManager.Desktop?style=flat) ![GitHub forks](https://img.shields.io/github/forks/Richasy/LoopbackManager.Desktop)
 
 Local Network Loopback Manager for Windows 11
-  
-[![Release Builder](https://github.com/Richasy/LoopbackManager.Desktop/actions/workflows/release-builder.yml/badge.svg)](https://github.com/Richasy/LoopbackManager.Desktop/actions/workflows/release-builder.yml)
 
 [简体中文](README.md)
 
