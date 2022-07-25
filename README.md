@@ -9,8 +9,6 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/Richasy/LoopbackManager.Desktop)](https://github.com/Richasy/LoopbackManager.Desktop/releases) ![GitHub Release Date](https://img.shields.io/github/release-date/Richasy/LoopbackManager.Desktop) ![GitHub All Releases](https://img.shields.io/github/downloads/Richasy/LoopbackManager.Desktop/total) ![GitHub stars](https://img.shields.io/github/stars/Richasy/LoopbackManager.Desktop?style=flat) ![GitHub forks](https://img.shields.io/github/forks/Richasy/LoopbackManager.Desktop)
 
 Windows 11 的本地网络回环管理器
-  
-[![Release Builder](https://github.com/Richasy/LoopbackManager.Desktop/actions/workflows/release-builder.yml/badge.svg)](https://github.com/Richasy/LoopbackManager.Desktop/actions/workflows/release-builder.yml)
 
 [English](README_EN.md)
 
