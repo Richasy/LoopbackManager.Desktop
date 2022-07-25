@@ -46,7 +46,7 @@ jobs:
         $manifest.save(".\$env:Desktop_Project_Directory\Package.appxmanifest")
         
     - name: Build x64
-      run: msbuild $env:Solution_Path /p:Platform=x64 /p:AppxBundlePlatforms="x64" /p:AppxPackageDir=C:\Package\x64 /p:PackageCertificateKeyFile=$env:SigningCertificate /restore
+      run: msbuild $env:Solution_Path /p:Configuration=Release /p:Platform=x64 /p:AppxBundlePlatforms="x64" /p:AppxPackageDir=C:\Package\x64 /p:PackageCertificateKeyFile=$env:SigningCertificate /restore
       env:
         BuildMode: SideloadOnly
         Configuration: Release
