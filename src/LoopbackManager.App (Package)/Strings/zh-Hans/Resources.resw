@@ -118,6 +118,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AppName" xml:space="preserve">
-    <value>网络环回管理器</value>
+    <value>网络回环管理器</value>
+  </data>
+  <data name="NoPrograms" xml:space="preserve">
+    <value>没有找到指定的应用程序</value>
+  </data>
+  <data name="NoWorkDirectory" xml:space="preserve">
+    <value>该程序没有有效的工作目录</value>
+  </data>
+  <data name="OpenWorkDirectory" xml:space="preserve">
+    <value>打开工作目录</value>
+  </data>
+  <data name="ProgramIndexFailed" xml:space="preserve">
+    <value>尝试枚举应用程序时失败，请稍后尝试刷新</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+  <data name="Reset" xml:space="preserve">
+    <value>重置</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="SaveFailed" xml:space="preserve">
+    <value>保存状态失败</value>
+  </data>
+  <data name="SearchTip" xml:space="preserve">
+    <value>搜索应用名称</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>全选</value>
   </data>
 </root>

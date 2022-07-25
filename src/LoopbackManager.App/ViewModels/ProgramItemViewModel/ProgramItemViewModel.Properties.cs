@@ -24,6 +24,11 @@ namespace LoopbackManager.App.ViewModels
         public ReactiveCommand<Unit, Unit> ResetCommand { get; }
 
         /// <summary>
+        /// 打开工作文件夹的命令.
+        /// </summary>
+        public ReactiveCommand<Unit, Unit> OpenWorkFolderCommand { get; }
+
+        /// <summary>
         /// 容器名.
         /// </summary>
         [Reactive]
@@ -46,6 +51,12 @@ namespace LoopbackManager.App.ViewModels
         /// </summary>
         [Reactive]
         public bool IsLoopback { get; set; }
+
+        /// <summary>
+        /// 包的全名.
+        /// </summary>
+        [Reactive]
+        public string PackageFullName { get; set; }
 
         /// <summary>
         /// 标识符.

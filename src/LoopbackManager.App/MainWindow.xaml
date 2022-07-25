@@ -8,15 +8,23 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid RowSpacing="4">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <controls:AppTitleBar />
+        <InfoBar
+            x:Name="MessageInfoBar"
+            Grid.Row="1"
+            Margin="12,0"
+            HorizontalAlignment="Stretch"
+            IsClosable="True"
+            IsOpen="False" />
         <Frame
             x:Name="MainFrame"
-            Grid.Row="1"
+            Grid.Row="2"
             Loaded="OnMainFrameLoaded" />
     </Grid>
 </Window>

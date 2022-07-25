@@ -44,6 +44,11 @@ namespace LoopbackManager.App.ViewModels
         public ReactiveCommand<Unit, Unit> ReloadCommand { get; }
 
         /// <summary>
+        /// 检查状态的命令.
+        /// </summary>
+        public ReactiveCommand<Unit, Unit> CheckStatusCommand { get; }
+
+        /// <summary>
         /// 显示的程序列表.
         /// </summary>
         public ObservableCollection<ProgramItemViewModel> Programs { get; }
@@ -70,5 +75,17 @@ namespace LoopbackManager.App.ViewModels
         /// </summary>
         [Reactive]
         public string SearchKeyword { get; set; }
+
+        /// <summary>
+        /// 是否可以保存.
+        /// </summary>
+        [Reactive]
+        public bool CanSaveOrReset { get; set; }
+
+        /// <summary>
+        /// 是否可以全选.
+        /// </summary>
+        [Reactive]
+        public bool CanSelectAll { get; set; }
     }
 }

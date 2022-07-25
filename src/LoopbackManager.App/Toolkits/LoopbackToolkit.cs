@@ -49,11 +49,11 @@ namespace LoopbackManager.App.Toolkits
         internal static extern bool ConvertSidToStringSid(IntPtr pSid, out string strSid);
 
         // Use this API to convert a string reference (e.g. "@{blah.pri?ms-resource://whatever}") into a plain string.
-        [DllImport("shlwapi.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-        internal static extern int SHLoadIndirectstring(string pszSource, StringBuilder pszOutBuf);
+        [DllImport("shlwapi.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        internal static extern int SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf);
 
         // Use this API to convert a string SID into an actual SID.
-        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("advapi32.dll", SetLastError = true)]
         internal static extern bool ConvertStringSidToSid(string strSid, out IntPtr pSid);
 
         // Call this API to free the memory returned by the Enumeration API .
@@ -76,22 +76,6 @@ namespace LoopbackManager.App.Toolkits
         internal static extern bool ConvertSidToStringSid(
             [MarshalAs(UnmanagedType.LPArray)] byte[] pSID,
             out IntPtr ptrSid);
-
-        private static List<SID_AND_ATTRIBUTES> GetContainerSID(INET_FIREWALL_AC_CAPABILITIES cap)
-        {
-            var mycap = new List<SID_AND_ATTRIBUTES>();
-            var arrayValue = cap.capabilities;
-
-            var structSize = Marshal.SizeOf(typeof(SID_AND_ATTRIBUTES));
-            for (var i = 0; i < cap.count; i++)
-            {
-                var cur = (SID_AND_ATTRIBUTES)Marshal.PtrToStructure(arrayValue, typeof(SID_AND_ATTRIBUTES));
-                mycap.Add(cur);
-                arrayValue = new IntPtr((long)arrayValue + structSize);
-            }
-
-            return mycap;
-        }
 
         private static List<SID_AND_ATTRIBUTES> GetCapabilites(INET_FIREWALL_AC_CAPABILITIES cap)
         {

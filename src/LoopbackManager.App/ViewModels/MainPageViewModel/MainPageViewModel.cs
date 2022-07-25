@@ -5,10 +5,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using LoopbackManager.App.Models;
 using LoopbackManager.App.Toolkits;
+using PInvoke;
 using ReactiveUI;
+using Splat;
 
 namespace LoopbackManager.App.ViewModels
 {
@@ -26,16 +29,24 @@ namespace LoopbackManager.App.ViewModels
             _totalPrograms = new List<ProgramItemViewModel>();
             Programs = new ObservableCollection<ProgramItemViewModel>();
 
-            ReloadCommand = ReactiveCommand.Create(Reload, outputScheduler: RxApp.MainThreadScheduler);
+            ReloadCommand = ReactiveCommand.CreateFromTask(ReloadAsync, outputScheduler: RxApp.MainThreadScheduler);
             SaveCommand = ReactiveCommand.CreateFromTask(SaveAsync, outputScheduler: RxApp.MainThreadScheduler);
             SelectAllCommand = ReactiveCommand.Create(SelectAll, outputScheduler: RxApp.MainThreadScheduler);
             ResetCommand = ReactiveCommand.Create(ResetAll, outputScheduler: RxApp.MainThreadScheduler);
+            CheckStatusCommand = ReactiveCommand.Create(CheckStatus, outputScheduler: RxApp.MainThreadScheduler);
 
             _isReloading = ReloadCommand.IsExecuting.ToProperty(this, x => x.IsReloading, scheduler: RxApp.MainThreadScheduler);
 
             this.WhenAnyValue(x => x.SearchKeyword)
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(Search);
+
+            ReloadCommand.ThrownExceptions
+                .Subscribe(ex =>
+                {
+                    IsFailed = true;
+                    this.Log().Debug(ex.Message + "\n" + ex.StackTrace);
+                });
         }
 
         private void ResetStatus()
@@ -50,22 +61,53 @@ namespace LoopbackManager.App.ViewModels
             IsEmpty = false;
         }
 
-        private void Reload()
+        private async Task ReloadAsync()
         {
             ResetStatus();
             List<INET_FIREWALL_APP_CONTAINER> appList = null;
-            appList = LoopbackToolkit.GetApps().ToList();
+
+            await Task.Run(() =>
+            {
+                appList = LoopbackToolkit.GetApps().ToList();
+            });
 
             if (appList.Count == 0)
             {
                 throw new InvalidOperationException("未检测到应用程序");
             }
 
+            var sb = new StringBuilder();
             foreach (var app in appList)
             {
                 LoopbackToolkit.ConvertSidToStringSid(app.appContainerSid, out var containerSid);
+                if (string.IsNullOrEmpty(containerSid) || string.IsNullOrEmpty(app.workingDirectory))
+                {
+                    continue;
+                }
+
+                var appName = app.displayName;
+                if (appName.StartsWith("@"))
+                {
+                    sb.Clear();
+                    var transResult = LoopbackToolkit.SHLoadIndirectString(app.displayName, sb);
+                    if (transResult == (int)HResult.Code.S_OK)
+                    {
+                        appName = sb.ToString();
+                    }
+                }
+
+                if (string.IsNullOrEmpty(appName))
+                {
+                    appName = app.packageFullName;
+                }
+
                 var isLoopback = LoopbackToolkit.CheckLoopback(app.appContainerSid);
-                var item = new ProgramItemViewModel(app.appContainerName, app.displayName, app.workingDirectory, containerSid, isLoopback);
+                var item = new ProgramItemViewModel(app.appContainerName, appName, app.workingDirectory, containerSid, app.packageFullName, isLoopback);
+                if (_totalPrograms.Contains(item))
+                {
+                    continue;
+                }
+
                 _totalPrograms.Add(item);
             }
 
@@ -107,6 +149,7 @@ namespace LoopbackManager.App.ViewModels
                 if (result)
                 {
                     _totalPrograms.ForEach(p => p.SaveLoopbackCommand.Execute().Subscribe());
+                    CheckStatus();
                 }
                 else
                 {
@@ -127,12 +170,20 @@ namespace LoopbackManager.App.ViewModels
                 Programs.Clear();
             }
 
+            items = items.OrderByDescending(p => p.IsLoopback).ThenBy(p => p.DisplayName);
+
             foreach (var item in items)
             {
                 Programs.Add(item);
             }
 
             IsEmpty = Programs.Count == 0;
+        }
+
+        private void CheckStatus()
+        {
+            CanSaveOrReset = _totalPrograms.Any(p => p.IsLoopbackChanged);
+            CanSelectAll = _totalPrograms.Any(p => !p.IsLoopback);
         }
     }
 }

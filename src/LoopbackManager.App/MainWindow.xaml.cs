@@ -8,6 +8,7 @@ using LoopbackManager.App.Toolkits;
 using LoopbackManager.App.ViewModels;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using WinRT;
 using WinRT.Interop;
 
@@ -147,7 +148,21 @@ namespace LoopbackManager.App
         }
 
         private void OnRequestShowTip(object sender, AppTipNotificationEventArgs e)
-            => throw new NotImplementedException();
+        {
+            var messageType = e.Type switch
+            {
+                Enums.InfoType.Information => InfoBarSeverity.Informational,
+                Enums.InfoType.Error => InfoBarSeverity.Error,
+                Enums.InfoType.Warning => InfoBarSeverity.Warning,
+                Enums.InfoType.Success => InfoBarSeverity.Success,
+                _ => InfoBarSeverity.Warning,
+            };
+
+            var msg = e.Message;
+            MessageInfoBar.IsOpen = true;
+            MessageInfoBar.Message = msg;
+            MessageInfoBar.Severity = messageType;
+        }
 
         private void OnMainFrameLoaded(object sender, RoutedEventArgs e)
             => MainFrame.Navigate(typeof(MainPage));

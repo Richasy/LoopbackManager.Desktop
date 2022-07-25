@@ -9,5 +9,14 @@ namespace LoopbackManager.App.Enums
     {
         AppName,
         SaveFailed,
+        SearchTip,
+        SelectAll,
+        Reset,
+        Refresh,
+        Save,
+        NoWorkDirectory,
+        OpenWorkDirectory,
+        NoPrograms,
+        ProgramIndexFailed,
     }
 }
