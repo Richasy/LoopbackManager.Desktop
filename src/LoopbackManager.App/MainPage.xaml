@@ -29,6 +29,7 @@
             <Button
                 Style="{StaticResource AccentButtonStyle}"
                 Grid.Column="1"
+                MinWidth="120"
                 VerticalAlignment="Center"
                 Command="{x:Bind ViewModel.SaveCommand}"
                 Content="{ext:Locale Name=Save}"

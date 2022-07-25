@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "LoopbackManager.App (Package)", "src\LoopbackManager.App (Package)\LoopbackManager.App (Package).wapproj", "{E27D101E-9E9A-4DA9-884B-55E19FF73E97}"
+Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "LoopbackManager.Package", "src\LoopbackManager.Package\LoopbackManager.Package.wapproj", "{E27D101E-9E9A-4DA9-884B-55E19FF73E97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoopbackManager.App", "src\LoopbackManager.App\LoopbackManager.App.csproj", "{3C93931D-C9C5-44A9-AD89-C1DB27EA5805}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoopbackManager.App", "src\LoopbackManager.App\LoopbackManager.App.csproj", "{3C93931D-C9C5-44A9-AD89-C1DB27EA5805}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

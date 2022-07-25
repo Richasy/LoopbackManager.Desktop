@@ -42,8 +42,8 @@
     <DefaultLanguage>zh-CN</DefaultLanguage>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <EntryPointProjectUniqueName>..\LoopbackManager.App\LoopbackManager.App.csproj</EntryPointProjectUniqueName>
-    <PackageCertificateKeyFile>LoopbackManager.App_TemporaryKey.pfx</PackageCertificateKeyFile>
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+    <PackageCertificateKeyFile>LoopbackManager.Package_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -111,9 +111,9 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <None Include="LoopbackManager.Package_TemporaryKey.pfx" />
     <PRIResource Include="Strings\en-US\Resources.resw" />
     <PRIResource Include="Strings\zh-Hant\Resources.resw" />
-    <None Include="LoopbackManager.App_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LoopbackManager.App\LoopbackManager.App.csproj">
@@ -125,7 +125,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="[1.1.3]">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="[10.0.22000.194]">
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
   </ItemGroup>
