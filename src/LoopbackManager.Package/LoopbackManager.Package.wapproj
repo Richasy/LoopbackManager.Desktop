@@ -43,6 +43,7 @@
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <EntryPointProjectUniqueName>..\LoopbackManager.App\LoopbackManager.App.csproj</EntryPointProjectUniqueName>
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+    <NoWarn>$(NoWarn);NU1702;NU1701</NoWarn>
     <PackageCertificateKeyFile>LoopbackManager.Package_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <ItemGroup>
