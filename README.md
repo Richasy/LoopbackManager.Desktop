@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://img1.imgtp.com/2022/07/25/CBI1j6zz.png" style="width:48px"/>
+<img src="./assets/logo.png" style="width:48px"/>
 </p>
 
 <div align="center">
@@ -45,8 +45,6 @@ Windows 11 的本地网络回环管理器
 ### 侧加载 (Sideload)
 
 如果你想本地安装网络回环管理器，请打开右侧的 [Release](https://github.com/Richasy/LoopbackManager.Desktop/releases) 页面，找到最新版本，并选择适用于当前系统的安装包下载。
-
-*目前仅提供 x64 安装包，对于 ARM64 设备，Win11 可以直接安装 X64 的包*
 
 然后打开 [系统设置](ms-settings:developers)，打开 `开发者模式` ，并等待系统安装一些必要的扩展项。
 
