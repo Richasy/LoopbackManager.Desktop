@@ -81,7 +81,7 @@ dotnet_naming_style.interface_style.required_prefix = I
 # Use PascalCase for constant fields
 dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols  = constant_fields
-dotnet_naming_rule.constant_fields_should_be_pascal_case.style    = pascal_case_style
+dotnet_naming_rule.constant_fields_should_be_pascal_case.style = pascal_case_style
 dotnet_naming_symbols.constant_fields.applicable_kinds            = field
 dotnet_naming_symbols.constant_fields.applicable_accessibilities  = *
 dotnet_naming_symbols.constant_fields.required_modifiers          = const
@@ -89,23 +89,23 @@ dotnet_naming_symbols.constant_fields.required_modifiers          = const
 # Use IPascalCase for interfaces
 dotnet_naming_rule.interfaces_should_start_with_i.severity = warning
 dotnet_naming_rule.interfaces_should_start_with_i.symbols  = interfaces
-dotnet_naming_rule.interfaces_should_start_with_i.style    = interface_style
+dotnet_naming_rule.interfaces_should_start_with_i.style = interface_style
 dotnet_naming_symbols.interfaces.applicable_kinds          = interface
 
 # Use PascalCase for types
 dotnet_naming_rule.use_pascal_case_for_types.severity = error
 dotnet_naming_rule.use_pascal_case_for_types.symbols  = types
-dotnet_naming_rule.use_pascal_case_for_types.style    = pascal_case_style
+dotnet_naming_rule.use_pascal_case_for_types.style = pascal_case_style
 dotnet_naming_symbols.types.applicable_kinds          = class, struct, interface, enum
 
 # Use PascalCase for non-field members
 dotnet_naming_rule.use_pascal_case_for_non_field_members.severity = warning
 dotnet_naming_rule.use_pascal_case_for_non_field_members.symbols  = non_fields_members
-dotnet_naming_rule.use_pascal_case_for_non_field_members.style    = pascal_case_style
+dotnet_naming_rule.use_pascal_case_for_non_field_members.style = pascal_case_style
 dotnet_naming_symbols.non_fields_members.applicable_kinds         = property, method, event
 
 # Use _camelCase for private and protected fields
-dotnet_naming_rule.private_or_protected_field_should_be_begin_with__.severity = suggestion
+dotnet_naming_rule.private_or_protected_field_should_be_begin_with__.severity = warning
 dotnet_naming_rule.private_or_protected_field_should_be_begin_with__.symbols = private_or_protected_field
 dotnet_naming_rule.private_or_protected_field_should_be_begin_with__.style = begin_with__
 dotnet_naming_symbols.private_or_protected_field.applicable_kinds = field
@@ -114,6 +114,11 @@ dotnet_naming_style.begin_with__.required_prefix = _
 dotnet_naming_style.begin_with__.required_suffix = 
 dotnet_naming_style.begin_with__.word_separator = 
 dotnet_naming_style.begin_with__.capitalization = camel_case
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+tab_width = 4
+end_of_line = crlf
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
+dotnet_style_namespace_match_folder = false:suggestion
 
 ###############################
 # C# Code Style Rules         #
@@ -185,3 +190,14 @@ csharp_space_between_method_call_empty_parameter_list_parentheses = false
 # Wrapping preferences
 csharp_preserve_single_line_statements = false
 csharp_preserve_single_line_blocks = true
+csharp_using_directive_placement = outside_namespace:silent
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_style_prefer_method_group_conversion = true:silent
+csharp_style_prefer_top_level_statements = true:silent
+csharp_style_expression_bodied_lambdas = true:silent
+csharp_style_expression_bodied_local_functions = false:silent
+dotnet_diagnostic.SA1633.severity = error
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_style_allow_blank_line_after_token_in_arrow_expression_clause_experimental = true:silent
+dotnet_diagnostic.IDE0073.severity = warning

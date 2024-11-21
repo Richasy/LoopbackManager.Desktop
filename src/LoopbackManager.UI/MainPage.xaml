@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:MainPageBase
+    x:Class="LoopbackManager.UI.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:ext="using:LoopbackManager.UI.Extensions"
+    xmlns:local="using:LoopbackManager.UI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:LoopbackManager.UI.ViewModels"
+    mc:Ignorable="d">
+
+    <Grid RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid Padding="12,0" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <AutoSuggestBox
+                HorizontalAlignment="Stretch"
+                PlaceholderText="{ext:Locale Name=SearchTip}"
+                QueryIcon="Find"
+                Text="{x:Bind ViewModel.SearchKeyword, Mode=TwoWay}" />
+            <Button
+                Style="{StaticResource AccentButtonStyle}"
+                Grid.Column="1"
+                MinWidth="120"
+                VerticalAlignment="Center"
+                Command="{x:Bind ViewModel.SaveCommand}"
+                Content="{ext:Locale Name=Save}"
+                IsEnabled="{x:Bind ViewModel.CanSaveOrReset, Mode=OneWay}" />
+        </Grid>
+
+        <ScrollViewer
+            Grid.Row="1"
+            HorizontalScrollMode="Disabled"
+            VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <ItemsRepeater Margin="12,4,12,12" ItemsSource="{x:Bind ViewModel.Programs, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout
+                            ItemsStretch="Fill"
+                            MinColumnSpacing="8"
+                            MinItemHeight="60"
+                            MinItemWidth="320"
+                            MinRowSpacing="8" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="viewmodels:ProgramItemViewModel">
+                            <local:ProgramItemControl ViewModel="{x:Bind}" />
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </Grid>
+        </ScrollViewer>
+
+        <Grid
+            Grid.Row="2"
+            Padding="12,8"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <HyperlinkButton
+                    Command="{x:Bind ViewModel.SelectAllCommand}"
+                    Content="{ext:Locale Name=SelectAll}"
+                    FontSize="12"
+                    IsEnabled="{x:Bind ViewModel.CanSelectAll, Mode=OneWay}" />
+                <StackPanel Width="1" Background="{ThemeResource CardStrokeColorDefaultSolidBrush}" />
+                <HyperlinkButton
+                    Command="{x:Bind ViewModel.ResetAllCommand}"
+                    Content="{ext:Locale Name=Reset}"
+                    FontSize="12"
+                    IsEnabled="{x:Bind ViewModel.CanSaveOrReset, Mode=OneWay}" />
+            </StackPanel>
+            <HyperlinkButton
+                Grid.Column="1"
+                Command="{x:Bind ViewModel.ReloadCommand}"
+                Content="{ext:Locale Name=Refresh}"
+                FontSize="12" />
+        </Grid>
+
+
+        <TextBlock
+            Style="{StaticResource CaptionTextBlockStyle}"
+            Grid.Row="1"
+            MaxWidth="320"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+            Text="{ext:Locale Name=NoPrograms}"
+            TextAlignment="Center"
+            TextWrapping="Wrap"
+            Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}" />
+
+        <TextBlock
+            Style="{StaticResource CaptionTextBlockStyle}"
+            Grid.Row="1"
+            MaxWidth="320"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+            Text="{ext:Locale Name=ProgramIndexFailed}"
+            TextAlignment="Center"
+            TextWrapping="Wrap"
+            Visibility="{x:Bind ViewModel.IsFailed, Mode=OneWay}" />
+
+        <ProgressRing
+            Grid.Row="1"
+            Width="32"
+            Height="32"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsActive="{x:Bind ViewModel.IsReloading, Mode=OneWay}" />
+    </Grid>
+</local:MainPageBase>

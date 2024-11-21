@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+	<LangVersion>latest</LangVersion>
+	<Nullable>enable</Nullable>
+	<NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+  	<AdditionalFiles Include="$(SolutionDir)src\LoopbackManager.UI\Resources\zh-Hans\Resources.resw" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LoopbackManager.ResourceGenerator\LoopbackManager.ResourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

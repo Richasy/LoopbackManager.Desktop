@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://img1.imgtp.com/2022/07/25/CBI1j6zz.png" style="width:48px"/>
+<img src="./assets/logo.png" style="width:48px"/>
 </p>
 
 <div align="center">
@@ -45,8 +45,6 @@ The store version only supports Windows 11 and above.
 ### Sideload
 
 If you want to install the network loopback manager locally, please open the [Release](https://github.com/Richasy/LoopbackManager.Desktop/releases) on the right, Find the latest version and select the installation package for the current system to download。
-
-*Currently only x64 packages are provided, for ARM64 devices, Win11 can directly install X64 packages*
 
 Then open [System Settings](ms-settings:developers)，Turn on `Developer mode` and wait for the system to install some necessary extensions.
 
