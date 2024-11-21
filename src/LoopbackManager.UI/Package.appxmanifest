@@ -8,21 +8,21 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="924f03b8-5752-4dd1-9b20-b2460dd8a3b6"
-    Publisher="CN=zrich"
+    Name="Richasy.LoopbackManager"
+    Publisher="CN=Richasy"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="924f03b8-5752-4dd1-9b20-b2460dd8a3b6" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>LoopbackManager.UI</DisplayName>
-    <PublisherDisplayName>zrich</PublisherDisplayName>
+    <DisplayName>ms-resource:AppName</DisplayName>
+    <PublisherDisplayName>Richasy</PublisherDisplayName>
     <Logo>Assets\Logo\StoreLogo.png</Logo>
   </Properties>
 
   <Dependencies>
-    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
-    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.19041.0" MaxVersionTested="10.0.22621.0" />
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.22621.0" />
   </Dependencies>
 
   <Resources>
