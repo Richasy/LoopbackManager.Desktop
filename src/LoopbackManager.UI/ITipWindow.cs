@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Richasy. All rights reserved.
 
 using System.Threading.Tasks;
-using Richasy.WinUI.Share.Base;
+using Richasy.WinUIKernel.Share.Base;
 
 namespace LoopbackManager.UI;
 

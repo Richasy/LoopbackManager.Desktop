@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Richasy. All rights reserved.
 
 using LoopbackManager.UI.ViewModels;
-using Richasy.WinUI.Share.Base;
+using Richasy.WinUIKernel.Share.Base;
 
 namespace LoopbackManager.UI;
 

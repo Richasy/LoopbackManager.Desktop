@@ -7,7 +7,7 @@ using LoopbackManager.UI.Toolkits;
 using LoopbackManager.UI.ViewModels;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Richasy.WinUI.Share.Base;
+using Richasy.WinUIKernel.Share.Base;
 using Windows.Graphics;
 using Windows.Win32;
 using Windows.Win32.Foundation;

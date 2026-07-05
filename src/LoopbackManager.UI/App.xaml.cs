@@ -19,7 +19,6 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
-        FluentIcons.WinUI.Extensions.UseSegoeMetrics(this);
     }
 
     /// <summary>

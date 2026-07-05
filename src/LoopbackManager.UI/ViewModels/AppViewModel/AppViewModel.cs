@@ -2,8 +2,8 @@
 
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
-using Richasy.WinUI.Share.Base;
-using Richasy.WinUI.Share.ViewModels;
+using Richasy.WinUIKernel.Share.Base;
+using Richasy.WinUIKernel.Share.ViewModels;
 using Windows.ApplicationModel;
 
 namespace LoopbackManager.UI.ViewModels;

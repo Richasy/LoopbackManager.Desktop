@@ -10,8 +10,8 @@ using LoopbackManager.Models;
 using LoopbackManager.Models.Constants;
 using LoopbackManager.UI.Toolkits;
 using Microsoft.UI.Dispatching;
-using Richasy.WinUI.Share.Base;
-using Richasy.WinUI.Share.ViewModels;
+using Richasy.WinUIKernel.Share.Base;
+using Richasy.WinUIKernel.Share.ViewModels;
 using Windows.Win32;
 
 namespace LoopbackManager.UI.ViewModels;
@@ -77,8 +77,9 @@ public sealed partial class MainPageViewModel : ViewModelBase
                         unsafe
                         {
                             fixed (char* nameChars = new char[app.displayName.Length + 1])
+                            fixed (char* sourceChars = app.displayName)
                             {
-                                if (PInvoke.SHLoadIndirectString(appName, nameChars, Convert.ToUInt32(app.displayName.Length + 1)) == 0)
+                                if (PInvoke.SHLoadIndirectString(sourceChars, nameChars, Convert.ToUInt32(app.displayName.Length + 1)) == 0)
                                 {
                                     appName = new string(nameChars);
                                 }
