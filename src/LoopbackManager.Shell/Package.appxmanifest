@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap uap10 rescap">
+
+  <!--
+    The MSIX identity + visual assets for this Sprout app — a normal, editable manifest that the Visual Studio manifest
+    designer opens. Edit the identity, capabilities, file associations, protocols, tiles and brand colour freely. The
+    Executable uses the standard $targetnametoken$ token (resolved to this project's built .exe when packed); every other
+    value is real. For a Store release, set the Partner Center identity in <Identity> below and keep the Publisher in step
+    with your signing certificate. Replace the files under Assets\ to re-brand.
+  -->
+
+  <Identity Name="00873C42-079B-4B04-A472-7AD398035B6C" Publisher="CN=anranzhang" Version="1.0.0.0" />
+
+  <Properties>
+    <DisplayName>LoopbackManager.Shell</DisplayName>
+    <PublisherDisplayName>anranzhang</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Applications>
+    <!-- A self-contained NativeAOT Win32 .exe packaged as a full-trust desktop app — no Windows App SDK runtime. -->
+    <Application Id="App"
+      Executable="$targetnametoken$.exe"
+      EntryPoint="Windows.FullTrustApplication"
+      uap10:TrustLevel="mediumIL"
+      uap10:RuntimeBehavior="packagedClassicApp">
+      <uap:VisualElements
+        DisplayName="LoopbackManager.Shell"
+        Description="LoopbackManager.Shell"
+        BackgroundColor="#2FA84F"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile
+          ShortName="LoopbackManager.Shell"
+          Square71x71Logo="Assets\Square71x71Logo.png"
+          Square310x310Logo="Assets\Square310x310Logo.png"
+          Wide310x150Logo="Assets\Wide310x150Logo.png">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo" />
+            <uap:ShowOn Tile="wide310x150Logo" />
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile>
+        <uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#2FA84F" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

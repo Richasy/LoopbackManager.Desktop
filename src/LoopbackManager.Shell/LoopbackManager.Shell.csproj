@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- A -windows TFM turns on the WinRT projection of the OS, so this Sprout app can also call Windows platform APIs
+         (and the Windows App SDK below). Sprout itself is plain net11.0 and is consumed as a package, so it works
+         unchanged from here. 10.0.19041.0 is Sprout's minimum Windows version. -->
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Per-app warning suppressions: append your own codes here (e.g. <NoWarn>$(NoWarn);CA1416</NoWarn>). Empty by
+         default; the $(NoWarn) preserves anything inherited from a Directory.Build.props. -->
+    <NoWarn>$(NoWarn)</NoWarn>
+
+    <!-- The app icon, embedded into the .exe as its Win32 icon resource (Explorer / taskbar). At runtime, a Sprout
+         window with no explicit WindowSpec.Icon defaults to this same embedded icon, so the window shows it too. -->
+    <ApplicationIcon>app.ico</ApplicationIcon>
+
+    <!-- NativeAOT: `dotnet publish -r win-x64` produces one self-contained native .exe. -->
+    <PublishAot>true</PublishAot>
+    <SproutPackageFormat>Msix</SproutPackageFormat>
+
+    <!-- Windows App SDK, self-contained + unpackaged: the WinAppSDK runtime is bundled next to the app, so there is no
+         runtime to install, no bootstrapper, and no MSIX requirement — the app stays "just run the .exe" (Sprout's
+         model). MSIX is still opt-in (the packaging option / Sprout.Packaging), which packs this same output. -->
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <!-- Self-contained needs a concrete architecture: default the inner-loop RID to the host's so `dotnet build`/`run`
+         work; `dotnet publish -r win-x64` (or win-arm64) overrides it. -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
+    <SproutDefaultLanguage>zh-CN</SproutDefaultLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\logo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The Windows App SDK FOUNDATION feature area only — the non-UI platform APIs (app lifecycle, resources,
+         environment, power, windowing/composition/input OS support). It deliberately does NOT reference
+         Microsoft.WindowsAppSDK.WinUI, so no WinUI XAML is pulled in: Sprout draws the UI itself. -->
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" Version="2.1.0" />
+
+    <PackageReference Include="Sprout" Version="0.1.0-preview.1" />
+    <PackageReference Include="Sprout.Backend.D2D" Version="0.1.0-preview.1" />
+
+    <!-- The Sprout to WinRT interop glue (Foundation-only, no WinUI): window.GetWindowId() / window.CreateFileOpenPicker()
+         / picker.InitializeWithWindow(window), bridging a Sprout window to the Windows App SDK window handles. -->
+    <PackageReference Include="Sprout.WindowsAppSDK" Version="0.1.0-preview.1" />
+    <!-- Opt-in MSIX packaging: `dotnet publish -r win-x64` then also produces a signed .msix (the self-contained
+         WinAppSDK runtime is bundled inside it). No Windows App SDK MSIX tooling — the same Sprout packer is used. -->
+    <PackageReference Include="Sprout.Packaging" Version="0.1.0-preview.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Assets\Logo\" />
+    <Folder Include="Strings\zh-CN\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LoopbackManager.Models\LoopbackManager.Models.csproj" />
+  </ItemGroup>
+
+</Project>

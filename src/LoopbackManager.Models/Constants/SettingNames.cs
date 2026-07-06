@@ -8,9 +8,5 @@ namespace LoopbackManager.Models.Constants;
 /// </summary>
 public enum SettingNames
 {
-    WindowWidth,
-    WindowHeight,
-    WindowPositionLeft,
-    WindowPositionTop,
-    IsMainWindowMaximized,
+    WindowPlacement,
 }

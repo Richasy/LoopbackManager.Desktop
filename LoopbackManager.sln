@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.7.11822.327 insiders
+VisualStudioVersion = 18.7.11822.327
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoopbackManager.UI", "src\LoopbackManager.UI\LoopbackManager.UI.csproj", "{857A6D62-2862-48DF-B26A-EB5206C5CCD0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoopbackManager.Models", "src\LoopbackManager.Models\LoopbackManager.Models.csproj", "{DE181807-3426-4A84-A21A-07A18C593DB8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoopbackManager.ResourceGenerator", "src\LoopbackManager.ResourceGenerator\LoopbackManager.ResourceGenerator.csproj", "{F93A995A-C4D4-4605-B35C-3850BDB76B25}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoopbackManager.Shell", "src\LoopbackManager.Shell\LoopbackManager.Shell.csproj", "{BECFD811-34A7-40F8-B5FF-A823E0983A96}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +63,18 @@ Global
 		{F93A995A-C4D4-4605-B35C-3850BDB76B25}.Release|x64.Build.0 = Release|Any CPU
 		{F93A995A-C4D4-4605-B35C-3850BDB76B25}.Release|x86.ActiveCfg = Release|Any CPU
 		{F93A995A-C4D4-4605-B35C-3850BDB76B25}.Release|x86.Build.0 = Release|Any CPU
+		{BECFD811-34A7-40F8-B5FF-A823E0983A96}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{BECFD811-34A7-40F8-B5FF-A823E0983A96}.Debug|arm64.Build.0 = Debug|Any CPU
+		{BECFD811-34A7-40F8-B5FF-A823E0983A96}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BECFD811-34A7-40F8-B5FF-A823E0983A96}.Debug|x64.Build.0 = Debug|Any CPU
+		{BECFD811-34A7-40F8-B5FF-A823E0983A96}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BECFD811-34A7-40F8-B5FF-A823E0983A96}.Debug|x86.Build.0 = Debug|Any CPU
+		{BECFD811-34A7-40F8-B5FF-A823E0983A96}.Release|arm64.ActiveCfg = Release|Any CPU
+		{BECFD811-34A7-40F8-B5FF-A823E0983A96}.Release|arm64.Build.0 = Release|Any CPU
+		{BECFD811-34A7-40F8-B5FF-A823E0983A96}.Release|x64.ActiveCfg = Release|Any CPU
+		{BECFD811-34A7-40F8-B5FF-A823E0983A96}.Release|x64.Build.0 = Release|Any CPU
+		{BECFD811-34A7-40F8-B5FF-A823E0983A96}.Release|x86.ActiveCfg = Release|Any CPU
+		{BECFD811-34A7-40F8-B5FF-A823E0983A96}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
