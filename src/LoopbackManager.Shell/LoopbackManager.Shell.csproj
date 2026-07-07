@@ -34,7 +34,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Assets\logo.ico" />
+    <Compile Remove="Assets\Logo\**" />
+    <Content Remove="Assets\Logo\**" />
+    <EmbeddedResource Remove="Assets\Logo\**" />
+    <None Remove="Assets\Logo\**" />
+    <PRIResource Remove="Assets\Logo\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\logo.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -55,7 +65,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\Logo\" />
     <Folder Include="Strings\zh-CN\" />
   </ItemGroup>
 

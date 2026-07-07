@@ -5,19 +5,24 @@ using static Sprout.Markup;
 
 namespace LoopbackManager.Shell.Controls;
 
-public sealed partial class AppTitleBar : Control
-{
-    private AppTitleBarView Build() => new AppTitleBarView();
-}
-
 [Composite]
-public readonly partial record struct AppTitleBarView()
+public readonly partial record struct AppTitleBarView
 {
-    public Ui Body => Row(
-        Image(ImageSource.FromUri("Assets/logo.ico"))
-            .Layout(width: 16, height: 16, align: Sprout.Layout.CrossAlign.Center, verticalAlignment: Sprout.Layout.Alignment.Center),
+    internal static readonly ImageHandle Logo = new(ImageSource.FromFile(
+        System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "logo.ico")));
+
+    public Ui Body => Stack(
+        Image(Logo)
+            .Width(16)
+            .Height(16)
+            .VAlign(Sprout.Layout.VerticalAlignment.Center)
+            .HAlign(Sprout.Layout.HorizontalAlignment.Left),
         Text(Resources.AppName)
+            .FontSize(12)
+            .VAlign(Sprout.Layout.VerticalAlignment.Center)
+            .TooltipWhenTrimmed()
         )
-        .Spacing(8)
-        .Padding(4, 0, 0, 0);
+        .Orientation(Sprout.Widgets.Orientation.Horizontal)
+        .Spacing(12)
+        .Padding(12, 0, 0, 0);
 }

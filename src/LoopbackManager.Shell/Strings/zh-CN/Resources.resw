@@ -119,6 +119,8 @@
   </resheader>
   <data name="AppName" xml:space="preserve">
     <value>网络回环管理器</value>
-    <comment>A sample string. Read it in a Control's Build() as Resources.Greeting — the read is reactive, so a live language switch re-localizes the UI.</comment>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>保存</value>
   </data>
 </root>

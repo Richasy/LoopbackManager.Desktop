@@ -1,4 +1,5 @@
-﻿using LoopbackManager.Shell.Toolkits;
+﻿using LoopbackManager.Shell.Controls;
+using LoopbackManager.Shell.Toolkits;
 using Sprout;
 
 namespace LoopbackManager.Shell;
@@ -18,7 +19,6 @@ public sealed class App : Application
         _window = OpenWindow(new WindowSpec
         {
             Title = Resources.AppName,
-            ExtendsContentIntoTitleBar = true,
             Placement = WindowPlacement.TryParse(lastPlacement, out var placement) ? placement : null,
             MinSize = new(612, 740),
             Size = new(612,740),
@@ -28,9 +28,10 @@ public sealed class App : Application
 
         _window.ActualThemeChanged += (_, _) => SyncBackground();
         _window.Closing += OnClosing;
+        _window.SetTitleBarContent(new AppTitleBarView());
         SyncBackground();
 
-        _window.SetContent(new MainView(_window));
+        _window.SetContent(new AppRoot());
         _window.Show();
     }
 
