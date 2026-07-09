@@ -38,7 +38,7 @@ public sealed partial class AppHeader : Control
         Button(
             Stack(
                 Icon.Fluent(FluentSymbol.Checkmark, size: 14).Visible(_justSaved.Value),
-                AnimatedText(_justSaved.Value ? Resources.Saved : Resources.Save))
+                AnimatedText(_justSaved.Value ? Resources.Saved : Resources.Save, foreground: Theme.Resolve().Colors.TextOnAccentFillColorPrimary))
                 .Orientation(Orientation.Horizontal)
                 .Spacing(6)
                 .HAlign(HorizontalAlignment.Center)
@@ -62,7 +62,7 @@ public sealed partial class AppHeader : Control
         if (_store.SaveResult.IsSuccess)
         {
             _justSaved.Value = true;
-            await Task.Delay(TimeSpan.FromSeconds(3));
+            await Task.Delay(TimeSpan.FromSeconds(1.5));
             _justSaved.Value = false;
         }
     }
