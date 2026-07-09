@@ -1,4 +1,7 @@
-﻿using Sprout.Reactive;
+﻿using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using Sprout.Reactive;
 
 namespace LoopbackManager.Shell;
 
@@ -11,7 +14,7 @@ namespace LoopbackManager.Shell;
 /// notification (which the old view-model needed via <c>OnIsLoopbackChanged → CheckStatus</c>).
 /// </summary>
 [Store]
-internal sealed partial class AppItemStore
+public sealed partial class AppItemStore
 {
     /// <summary>The AppContainer's internal name.</summary>
     public string ContainerName { get; }
@@ -62,4 +65,27 @@ internal sealed partial class AppItemStore
 
     /// <summary>Marks the current toggle as saved — the baseline becomes the current value, so the row is no longer "changed".</summary>
     public void Commit() => BaselineLoopback = IsLoopback;
+
+    /// <summary>Whether this row has a working directory that can be opened.</summary>
+    public bool CanOpenFolder => !string.IsNullOrEmpty(WorkingDirectory);
+
+    /// <summary>
+    /// Opens the app's working directory in the file explorer via the shell. A no-op when the directory is unknown or
+    /// no longer on disk; a shell-launch failure (blocked by policy, etc.) is swallowed so it can never crash the UI.
+    /// </summary>
+    public void OpenFolder()
+    {
+        if (string.IsNullOrEmpty(WorkingDirectory) || !Directory.Exists(WorkingDirectory))
+        {
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo { FileName = WorkingDirectory, UseShellExecute = true });
+        }
+        catch (Win32Exception)
+        {
+        }
+    }
 }

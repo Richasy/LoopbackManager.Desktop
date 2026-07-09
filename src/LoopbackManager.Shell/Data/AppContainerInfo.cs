@@ -12,7 +12,7 @@
 /// <param name="Sid">The AppContainer SID as a string (the key used to set exemptions).</param>
 /// <param name="PackageFullName">The package full name.</param>
 /// <param name="IsExempt">Whether this AppContainer currently has a loopback exemption.</param>
-internal sealed record AppContainerInfo(
+public sealed record AppContainerInfo(
     string ContainerName,
     string DisplayName,
     string WorkingDirectory,

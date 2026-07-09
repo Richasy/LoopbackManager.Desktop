@@ -1,55 +1,29 @@
-﻿using System.Runtime.CompilerServices;
-using Microsoft.Windows.AppLifecycle;
+﻿using LoopbackManager.Shell.Controls;
 
 using Sprout;
-using Sprout.Graphics;
 using Sprout.Layout;
-using Sprout.Reconcile;
-using Sprout.Styling;
-using Sprout.Theming;
 
 using static Sprout.Markup;
 
 namespace LoopbackManager.Shell;
 
 /// <summary>
-/// The window content: a tiny reactive <see cref="Control"/> that also demonstrates reaching the Windows platform.
-/// Its <c>Build()</c> reads the window's effective theme (so it re-renders on a light/dark switch) and two WinRT values
-/// — an OS API and a Windows App SDK API — then renders a <see cref="WelcomeView"/>. Edit this to start building.
+/// The window content — the app's vertical composition: the search/save <see cref="AppHeader"/> on top, the (future)
+/// app list filling the middle, and the <see cref="AppFooter"/> actions at the bottom. Each section is its own control
+/// that reads the shared <see cref="AppStore"/> ambiently, so this root only <b>lays them out</b>: a single-column,
+/// three-row grid (auto / star / auto). The single column also sidesteps the column-span sizing issue a shared
+/// two-column grid hit — the header and footer never share a track with each other.
 /// </summary>
-/// <param name="window">The window whose effective theme this reports.</param>
 public sealed partial class AppRoot : Control
 {
-    public partial string SearchText { get; private set; }
-
-    public partial bool IsSaveButtonEnabled { get; private set; }
-
-    private readonly Action<string?> _searchTextAction;
-    private readonly Action _saveAction;
-
-    public AppRoot()
-    {
-        SearchText = string.Empty;
-        _searchTextAction = t => SearchText = t ?? string.Empty;
-        _saveAction = () => System.Diagnostics.Debug.WriteLine("Saved");
-    }
-
     public Ui Body => Grid(
-        [GridLength.Star(), GridLength.Auto],
-        [GridLength.Auto, GridLength.Star()],
-        TextBox()
-            .Text(SearchText)
-            .Placeholder(Resources.SearchPlaceholder)
-            .OnTextChanged(_searchTextAction)
-            .HAlign(HorizontalAlignment.Stretch)
-            .VAlign(VerticalAlignment.Center)
+        [GridLength.Star()],
+        [GridLength.Auto, GridLength.Star(), GridLength.Auto],
+        new AppHeader()
+            .Margin(new Sprout.Graphics.Thickness(0, 0, 0, 12))
             .Cell(0, 0),
-        Button(Resources.Save, _saveAction, ButtonPalette.FromTheme(Theme.Resolve().Colors, ButtonColorScheme.Accent))
-            .Enabled(IsSaveButtonEnabled)
-            .VAlign(VerticalAlignment.Stretch)
-            .MinWidth(120)
-            .Cell(1, 0)
-        )
-        .Padding(12, 8)
-        .ColumnSpacing(12);
+        new AppList()
+            .Cell(0, 1),
+        new AppFooter()
+            .Cell(0, 2));
 }

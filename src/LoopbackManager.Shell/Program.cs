@@ -7,5 +7,6 @@ return SproutApp.CreateBuilder(args)
     .UseApp<App>()
     .UseD2DBackend()
     .UseSingleInstance()
+    .ConfigureServices(s => s.AddSingleton(new AppStore(new LoopbackService())))
     .Build()
     .Run();

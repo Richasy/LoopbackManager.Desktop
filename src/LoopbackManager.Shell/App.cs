@@ -33,6 +33,11 @@ public sealed class App : Application
 
         _window.SetContent(new AppRoot());
         _window.Show();
+
+        // Kick off the initial load on startup (fire-and-forget): the shared store flips Apps Idle → Loading →
+        // Success/Error, and every section reading it (the list via FilteredApps, the header/footer via CanSave etc.)
+        // re-renders through the store's signals.
+        _ = Application.Current.Services.GetRequiredService<AppStore>().ReloadAsync();
     }
 
     private void OnClosing(object? sender, WindowClosingEventArgs e)

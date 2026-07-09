@@ -10,7 +10,7 @@ namespace LoopbackManager.Shell;
 /// domain is injected as <see cref="ILoopbackService"/>, so the whole store is headless-testable with a fake.
 /// </summary>
 [Store]
-internal sealed partial class AppStore
+public sealed partial class AppStore
 {
     private readonly ILoopbackService _service;
     private readonly LatestOperation<IReadOnlyList<AppItemStore>> _load;
@@ -44,7 +44,10 @@ internal sealed partial class AppStore
             var filtered = string.IsNullOrWhiteSpace(Filter)
                 ? all
                 : all.Where(a => a.DisplayName.Contains(Filter, StringComparison.OrdinalIgnoreCase));
-            return filtered.OrderBy(a => a.DisplayName, StringComparer.CurrentCultureIgnoreCase).ToList();
+            return filtered
+                .OrderByDescending(a => a.BaselineLoopback)
+                .ThenBy(a => a.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+                .ToList();
         }
     }
 

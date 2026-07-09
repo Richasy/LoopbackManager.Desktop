@@ -5,7 +5,7 @@
 /// current exemption state, and set the whole exemption set. It is injected (a real Win32 implementation in the app, a
 /// fake in a headless test), so the store is testable without touching interop or the OS.
 /// </summary>
-internal interface ILoopbackService
+public interface ILoopbackService
 {
     /// <summary>Enumerates every AppContainer on the system with its current loopback-exemption state.</summary>
     /// <param name="cancellationToken">Cancelled on a superseding reload or the store's disposal.</param>

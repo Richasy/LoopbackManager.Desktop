@@ -58,6 +58,9 @@
     <PackageReference Include="Sprout" Version="0.1.0-preview.1" />
     <PackageReference Include="Sprout.Backend.D2D" Version="0.1.0-preview.1" />
 
+    <!-- The standalone Fluent System Icons package: Icon.Fluent(FluentSymbol.X, …) leaves (namespace Sprout.Controls). -->
+    <PackageReference Include="Sprout.FluentIcon" Version="0.1.0-preview.1" />
+
     <!-- The Sprout to WinRT interop glue (Foundation-only, no WinUI): window.GetWindowId() / window.CreateFileOpenPicker()
          / picker.InitializeWithWindow(window), bridging a Sprout window to the Windows App SDK window handles. -->
     <PackageReference Include="Sprout.WindowsAppSDK" Version="0.1.0-preview.1" />
