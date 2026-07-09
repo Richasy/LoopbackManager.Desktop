@@ -1,0 +1,129 @@
+﻿using Sprout.Reactive;
+
+namespace LoopbackManager.Shell;
+
+/// <summary>
+/// The loopback list's data-response layer (the Sprout analogue of the old <c>MainPageViewModel</c>). It owns the app
+/// list as an <see cref="AsyncValue{T}"/> loaded latest-wins, a text <see cref="Filter"/>, and the whole-set save; the
+/// per-row toggle state lives in each <see cref="AppItemStore"/>. Every "can I…" flag is a reactive derived that reads
+/// the rows' signals, so toggling a row or finishing a save recomputes it with no manual notification. The loopback
+/// domain is injected as <see cref="ILoopbackService"/>, so the whole store is headless-testable with a fake.
+/// </summary>
+[Store]
+internal sealed partial class AppStore
+{
+    private readonly ILoopbackService _service;
+    private readonly LatestOperation<IReadOnlyList<AppItemStore>> _load;
+    private readonly DroppableOperation<bool> _save;
+
+    /// <summary>The search keyword the list is filtered by — externally read-only, set via <see cref="SetFilter"/>.</summary>
+    public partial string Filter { get; private set; }
+
+    /// <summary>Creates the store over an injected loopback service.</summary>
+    /// <param name="service">The loopback domain surface (a real Win32 impl in the app, a fake in a test).</param>
+    public AppStore(ILoopbackService service)
+    {
+        _service = service;
+        Filter = string.Empty;
+        _load = new LatestOperation<IReadOnlyList<AppItemStore>>(LoadAppsAsync, Lifetime);
+        _save = new DroppableOperation<bool>(SaveExemptionsAsync, Lifetime);
+    }
+
+    /// <summary>The loaded app rows — Idle → Loading → Success(rows) / Error. Render with the four phases.</summary>
+    public AsyncValue<IReadOnlyList<AppItemStore>> Apps => _load.State;
+
+    /// <summary>The last save's result — Idle until saved, then Loading → Success(true) / Error (drive a tip off it).</summary>
+    public AsyncValue<bool> SaveResult => _save.State;
+
+    /// <summary>The rows after the current <see cref="Filter"/>, sorted by display name (a stable order that does not jump when a row toggles).</summary>
+    public IReadOnlyList<AppItemStore> FilteredApps
+    {
+        get
+        {
+            var all = Apps.Value ?? [];
+            var filtered = string.IsNullOrWhiteSpace(Filter)
+                ? all
+                : all.Where(a => a.DisplayName.Contains(Filter, StringComparison.OrdinalIgnoreCase));
+            return filtered.OrderBy(a => a.DisplayName, StringComparer.CurrentCultureIgnoreCase).ToList();
+        }
+    }
+
+    /// <summary>Whether a load succeeded but produced no apps.</summary>
+    public bool IsEmpty => Apps.IsSuccess && (Apps.Value?.Count ?? 0) == 0;
+
+    /// <summary>Whether the load failed.</summary>
+    public bool IsFailed => Apps.IsError;
+
+    /// <summary>Whether a load is in flight.</summary>
+    public bool IsLoading => Apps.IsLoading;
+
+    /// <summary>Whether a save is in flight.</summary>
+    public bool IsSaving => SaveResult.IsLoading;
+
+    /// <summary>Whether any row has a pending change (enables Save / Reset).</summary>
+    public bool CanSave => Apps.Value?.Any(a => a.IsLoopbackChanged) ?? false;
+
+    /// <summary>Whether any row is not yet exempt (enables Select-all).</summary>
+    public bool CanSelectAll => Apps.Value?.Any(a => !a.IsLoopback) ?? false;
+
+    /// <summary>Loads (or reloads) the app list; a new reload cancels a previous in-flight one (latest-wins).</summary>
+    /// <returns>A task that completes when the load settles.</returns>
+    public Task ReloadAsync() => _load.Run();
+
+    /// <summary>Sets the search keyword (re-filters <see cref="FilteredApps"/> reactively).</summary>
+    /// <param name="keyword">The new keyword (null treated as empty).</param>
+    public void SetFilter(string keyword) => Filter = keyword ?? string.Empty;
+
+    /// <summary>Marks every row as exempt (the "select all" action).</summary>
+    public void SelectAll()
+    {
+        foreach (var app in Apps.Value ?? [])
+        {
+            app.Set(true);
+        }
+    }
+
+    /// <summary>Reverts every row's pending toggle to its saved baseline (the "reset all" action).</summary>
+    public void ResetAll()
+    {
+        foreach (var app in Apps.Value ?? [])
+        {
+            app.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Saves the current exemption set; ignored if a save is already in flight (no double-submit). On success, each
+    /// row's baseline is committed here — in the caller's context (the UI thread in the app, the test thread headless),
+    /// so the signal writes stay on one thread — which flips <see cref="CanSave"/> back to <see langword="false"/>.
+    /// </summary>
+    /// <returns>A task that completes when the save settles (or immediately if ignored).</returns>
+    public async Task SaveAsync()
+    {
+        await _save.Run();
+        if (_save.State.IsSuccess)
+        {
+            foreach (var app in Apps.Value ?? [])
+            {
+                app.Commit();
+            }
+        }
+    }
+
+    // The latest-wins load work: fetch the snapshots and wrap each in a per-row store.
+    private async Task<IReadOnlyList<AppItemStore>> LoadAppsAsync(CancellationToken cancellationToken)
+    {
+        var infos = await _service.GetAppsAsync(cancellationToken);
+        return infos.Select(static info => new AppItemStore(info)).ToList();
+    }
+
+    // The droppable save work: push the whole exempt set (a full replace). Baseline commit happens in SaveAsync after
+    // the run settles, not here, so the signal writes are not on a background continuation.
+    private async Task<bool> SaveExemptionsAsync(CancellationToken cancellationToken)
+    {
+        var apps = Apps.Value ?? [];
+        IReadOnlyList<string> exemptSids = apps.Where(a => a.IsLoopback).Select(a => a.Sid).ToList();
+        await _service.SetExemptionsAsync(exemptSids, cancellationToken);
+        return true;
+    }
+}

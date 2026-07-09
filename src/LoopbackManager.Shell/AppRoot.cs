@@ -5,6 +5,7 @@ using Sprout;
 using Sprout.Graphics;
 using Sprout.Layout;
 using Sprout.Reconcile;
+using Sprout.Styling;
 using Sprout.Theming;
 
 using static Sprout.Markup;
@@ -19,7 +20,9 @@ namespace LoopbackManager.Shell;
 /// <param name="window">The window whose effective theme this reports.</param>
 public sealed partial class AppRoot : Control
 {
-    public partial string? SearchText { get; private set; }
+    public partial string SearchText { get; private set; }
+
+    public partial bool IsSaveButtonEnabled { get; private set; }
 
     private readonly Action<string?> _searchTextAction;
     private readonly Action _saveAction;
@@ -27,7 +30,7 @@ public sealed partial class AppRoot : Control
     public AppRoot()
     {
         SearchText = string.Empty;
-        _searchTextAction = t => SearchText = t;
+        _searchTextAction = t => SearchText = t ?? string.Empty;
         _saveAction = () => System.Diagnostics.Debug.WriteLine("Saved");
     }
 
@@ -35,12 +38,14 @@ public sealed partial class AppRoot : Control
         [GridLength.Star(), GridLength.Auto],
         [GridLength.Auto, GridLength.Star()],
         TextBox()
-            .Text(SearchText ?? string.Empty)
+            .Text(SearchText)
+            .Placeholder(Resources.SearchPlaceholder)
             .OnTextChanged(_searchTextAction)
             .HAlign(HorizontalAlignment.Stretch)
             .VAlign(VerticalAlignment.Center)
             .Cell(0, 0),
         Button(Resources.Save, _saveAction, ButtonPalette.FromTheme(Theme.Resolve().Colors, ButtonColorScheme.Accent))
+            .Enabled(IsSaveButtonEnabled)
             .VAlign(VerticalAlignment.Stretch)
             .MinWidth(120)
             .Cell(1, 0)

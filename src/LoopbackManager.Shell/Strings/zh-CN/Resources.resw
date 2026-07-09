@@ -123,4 +123,7 @@
   <data name="Save" xml:space="preserve">
     <value>保存</value>
   </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>搜索应用名称</value>
+  </data>
 </root>

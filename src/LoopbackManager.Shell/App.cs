@@ -21,7 +21,7 @@ public sealed class App : Application
             Title = Resources.AppName,
             Placement = WindowPlacement.TryParse(lastPlacement, out var placement) ? placement : null,
             MinSize = new(612, 740),
-            Size = new(612,740),
+            Size = new(612, 740),
             StartupLocation = WindowStartupLocation.CenterScreen,
             SystemBackdrop = SystemBackdrop.Mica,
         });

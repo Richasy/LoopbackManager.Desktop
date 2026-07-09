@@ -31,6 +31,8 @@
          work; `dotnet publish -r win-x64` (or win-arm64) overrides it. -->
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
     <SproutDefaultLanguage>zh-CN</SproutDefaultLanguage>
+    <!-- The neutral/default resource language MakePri stamps into the PRI, so a lookup has a fallback (silences PRI263). -->
+    <DefaultLanguage>zh-CN</DefaultLanguage>
   </PropertyGroup>
 
   <ItemGroup>

@@ -30,9 +30,13 @@ internal static class SettingsToolkit
         {
             if (defaultValue is Enum)
             {
-                var tempValue = settingContainer.Values[settingName].ToString();
-                _ = Enum.TryParse(typeof(T), tempValue, out var result);
-                return (T)result;
+                var tempValue = settingContainer.Values[settingName]?.ToString();
+                if (tempValue is not null && Enum.TryParse(typeof(T), tempValue, out var result) && result is not null)
+                {
+                    return (T)result;
+                }
+
+                return defaultValue;
             }
             else
             {
