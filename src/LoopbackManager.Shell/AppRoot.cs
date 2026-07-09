@@ -20,10 +20,10 @@ public sealed partial class AppRoot : Control
         [GridLength.Star()],
         [GridLength.Auto, GridLength.Star(), GridLength.Auto],
         new AppHeader()
-            .Margin(new Sprout.Graphics.Thickness(0, 0, 0, 12))
             .Cell(0, 0),
         new AppList()
             .Cell(0, 1),
         new AppFooter()
-            .Cell(0, 2));
+            .Cell(0, 2))
+        .RowSpacing(12);
 }
