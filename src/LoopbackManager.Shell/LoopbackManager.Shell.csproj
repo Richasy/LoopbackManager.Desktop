@@ -17,7 +17,7 @@
 
     <!-- The app icon, embedded into the .exe as its Win32 icon resource (Explorer / taskbar). At runtime, a Sprout
          window with no explicit WindowSpec.Icon defaults to this same embedded icon, so the window shows it too. -->
-    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
 
     <!-- NativeAOT: `dotnet publish -r win-x64` produces one self-contained native .exe. -->
     <PublishAot>true</PublishAot>
@@ -37,10 +37,13 @@
 
   <ItemGroup>
     <Compile Remove="Assets\Logo\**" />
-    <Content Remove="Assets\Logo\**" />
     <EmbeddedResource Remove="Assets\Logo\**" />
     <None Remove="Assets\Logo\**" />
     <PRIResource Remove="Assets\Logo\**" />
+    <Content Include="Assets\Logo\**\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
