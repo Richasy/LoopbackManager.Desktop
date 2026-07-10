@@ -35,7 +35,7 @@ public sealed partial class AppStore
     /// <summary>The last save's result — Idle until saved, then Loading → Success(true) / Error (drive a tip off it).</summary>
     public AsyncValue<bool> SaveResult => _save.State;
 
-    /// <summary>The rows after the current <see cref="Filter"/>, sorted by display name (a stable order that does not jump when a row toggles).</summary>
+    /// <summary>The rows matching the current <see cref="Filter"/> (by display name or package full name), sorted by display name (a stable order that does not jump when a row toggles).</summary>
     public IReadOnlyList<AppItemStore> FilteredApps
     {
         get
@@ -43,7 +43,8 @@ public sealed partial class AppStore
             var all = Apps.Value ?? [];
             var filtered = string.IsNullOrWhiteSpace(Filter)
                 ? all
-                : all.Where(a => a.DisplayName.Contains(Filter, StringComparison.OrdinalIgnoreCase));
+                : all.Where(a => a.DisplayName.Contains(Filter, StringComparison.OrdinalIgnoreCase)
+                    || a.PackageFullName.Contains(Filter, StringComparison.OrdinalIgnoreCase));
             return filtered
                 .OrderByDescending(a => a.BaselineLoopback)
                 .ThenBy(a => a.DisplayName, StringComparer.CurrentCultureIgnoreCase)

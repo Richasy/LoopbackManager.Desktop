@@ -47,14 +47,16 @@ public sealed partial class AppList : Control
                 new UniformGridLayout
                 {
                     ItemWidth = 320f,
-                    ItemHeight = 60f,
+                    ItemHeight = 56f,
                     ColumnSpacing = 8f,
                     RowSpacing = 8f,
                     ItemsStretch = UniformGridItemsStretch.Fill,
                 })
+                .Margin(0f, 8f)
             )
             .Vertical(ScrollMode.Auto)
             .HorizontalScrollBar(ScrollBarVisibility.Hidden)
+            .Padding(12f, 0f)
             .Visible(ShowList),
         Stack(
             ProgressRing(new Size(32f, 32f)).HAlign(HorizontalAlignment.Center),

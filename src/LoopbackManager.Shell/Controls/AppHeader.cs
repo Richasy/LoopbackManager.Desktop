@@ -38,7 +38,7 @@ public sealed partial class AppHeader : Control
         Button(
             Stack(
                 Icon.Fluent(FluentSymbol.Checkmark, size: 14).Visible(_justSaved.Value),
-                AnimatedText(_justSaved.Value ? Resources.Saved : Resources.Save))
+                Text(_justSaved.Value ? Resources.Saved : Resources.Save))
                 .Orientation(Orientation.Horizontal)
                 .Spacing(6)
                 .HAlign(HorizontalAlignment.Center)
