@@ -24,6 +24,5 @@ public sealed partial class AppRoot : Control
         new AppList()
             .Cell(0, 1),
         new AppFooter()
-            .Cell(0, 2))
-        .RowSpacing(12);
+            .Cell(0, 2));
 }
