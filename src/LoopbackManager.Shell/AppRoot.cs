@@ -1,6 +1,7 @@
 ﻿using LoopbackManager.Shell.Controls;
 
 using Sprout;
+using Sprout.Graphics;
 using Sprout.Layout;
 
 using static Sprout.Markup;
@@ -20,6 +21,7 @@ public sealed partial class AppRoot : Control
         [GridLength.Star()],
         [GridLength.Auto, GridLength.Star(), GridLength.Auto],
         new AppHeader()
+            .Margin(new Thickness(0f, 0f, 0f, 12f))
             .Cell(0, 0),
         new AppList()
             .Cell(0, 1),
