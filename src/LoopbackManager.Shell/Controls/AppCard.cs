@@ -37,6 +37,12 @@ public sealed partial class AppCard : Control
             .Cell(0, 0),
         Button(Icon.Fluent(FluentSymbol.Folder, size: 14), _itemStore.OpenFolder)
             .Enabled(_itemStore.CanOpenFolder)
+            .Automation(new()
+            {
+                Name = Resources.OpenWorkDirectory,
+                AutomationId = $"OpenFolderButton_{_itemStore.ContainerName}",
+            })
+            .ToolTip(Resources.OpenWorkDirectory)
             .VAlign(VerticalAlignment.Center)
             .HAlign(HorizontalAlignment.Right)
             .Cell(1, 0)

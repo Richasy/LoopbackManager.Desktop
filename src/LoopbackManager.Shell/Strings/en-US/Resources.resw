@@ -24,6 +24,9 @@
   <data name="NoSearchResults" xml:space="preserve">
     <value>No matching apps</value>
   </data>
+  <data name="OpenWorkDirectory" xml:space="preserve">
+    <value>Open working directory</value>
+  </data>
   <data name="Refresh" xml:space="preserve">
     <value>Refresh</value>
   </data>

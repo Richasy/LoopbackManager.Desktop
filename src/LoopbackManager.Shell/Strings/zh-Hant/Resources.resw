@@ -24,6 +24,9 @@
   <data name="NoSearchResults" xml:space="preserve">
     <value>找不到符合的應用程式</value>
   </data>
+  <data name="OpenWorkDirectory" xml:space="preserve">
+    <value>打開工作目錄</value>
+  </data>
   <data name="Refresh" xml:space="preserve">
     <value>重新整理</value>
   </data>
