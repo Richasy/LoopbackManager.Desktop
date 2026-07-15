@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
+using System.Runtime.InteropServices;
 using Sprout.Reactive;
+using Windows.System;
 
 namespace LoopbackManager.Shell;
 
@@ -74,8 +74,8 @@ public sealed partial class AppItemStore
     public bool CanOpenFolder => !string.IsNullOrEmpty(WorkingDirectory);
 
     /// <summary>
-    /// Opens the app's working directory in the file explorer via the shell. A no-op when the directory is unknown or
-    /// no longer on disk; a shell-launch failure (blocked by policy, etc.) is swallowed so it can never crash the UI.
+    /// Opens the app's working directory in the file explorer. A no-op when the directory is unknown or no longer on
+    /// disk; a platform launch failure (blocked by policy, etc.) is swallowed so it can never crash the UI.
     /// </summary>
     public void OpenFolder()
     {
@@ -84,11 +84,16 @@ public sealed partial class AppItemStore
             return;
         }
 
+        _ = LaunchFolderAsync(WorkingDirectory);
+    }
+
+    private static async Task LaunchFolderAsync(string path)
+    {
         try
         {
-            Process.Start(new ProcessStartInfo { FileName = WorkingDirectory, UseShellExecute = true });
+            _ = await Launcher.LaunchFolderPathAsync(path).AsTask();
         }
-        catch (Win32Exception)
+        catch (COMException)
         {
         }
     }
