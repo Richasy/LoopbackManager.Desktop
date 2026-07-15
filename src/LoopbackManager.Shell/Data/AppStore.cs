@@ -25,12 +25,17 @@ public sealed partial class AppStore
 
     /// <summary>Creates the store over an injected loopback service.</summary>
     /// <param name="service">The loopback domain surface (a real Win32 impl in the app, a fake in a test).</param>
-    public AppStore(ILoopbackService service)
+    /// <param name="scheduler">The optional home-thread scheduler used to marshal async state transitions; omit for synchronous headless tests.</param>
+    public AppStore(ILoopbackService service, IScheduler? scheduler = null)
     {
         _service = service;
         Filter = string.Empty;
-        _load = new LatestOperation<IReadOnlyList<AppItemStore>>(LoadAppsAsync, Lifetime);
-        _save = new DroppableOperation<bool>(SaveExemptionsAsync, Lifetime);
+        _load = scheduler is null
+            ? new LatestOperation<IReadOnlyList<AppItemStore>>(LoadAppsAsync, Lifetime)
+            : new LatestOperation<IReadOnlyList<AppItemStore>>(LoadAppsAsync, scheduler, Lifetime);
+        _save = scheduler is null
+            ? new DroppableOperation<bool>(SaveExemptionsAsync, Lifetime)
+            : new DroppableOperation<bool>(SaveExemptionsAsync, scheduler, Lifetime);
     }
 
     /// <summary>The loaded app rows — Idle → Loading → Success(rows) / Error. Render with the four phases.</summary>
@@ -108,15 +113,15 @@ public sealed partial class AppStore
 
     /// <summary>
     /// Saves the current exemption set; ignored if a save is already in flight (no double-submit). On success, each
-    /// row's baseline is committed here — in the caller's context (the UI thread in the app, the test thread headless),
-    /// so the signal writes stay on one thread — which flips <see cref="CanSave"/> back to <see langword="false"/>.
+    /// saved snapshot baseline is committed after the operation's terminal state reaches its home scheduler, so signal
+    /// writes stay on the UI thread in the app (or inline on the test thread without a scheduler).
     /// </summary>
-    /// <returns>A task that completes when the save settles (or immediately if ignored).</returns>
-    public async Task SaveAsync()
+    /// <returns><see langword="true"/> only when this invocation saved successfully; <see langword="false"/> when rejected or failed.</returns>
+    public async Task<bool> SaveAsync()
     {
         if (_save.IsRunning || _load.IsRunning)
         {
-            return;
+            return false;
         }
 
         var run = _save.Run();
@@ -128,7 +133,11 @@ public sealed partial class AppStore
             {
                 saved.App.Commit(saved.IsLoopback);
             }
+
+            return true;
         }
+
+        return false;
     }
 
     /// <summary>Dismisses the current save-failure banner without clearing the pending changes.</summary>

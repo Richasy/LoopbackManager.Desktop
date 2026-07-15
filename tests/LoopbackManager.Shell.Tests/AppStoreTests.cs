@@ -15,7 +15,7 @@ public sealed class AppStoreTests
         app.Set(true);
 
         service.SaveException = new InvalidOperationException("write failed");
-        await store.SaveAsync();
+        Assert.IsFalse(await store.SaveAsync());
 
         Assert.IsTrue(store.SaveResult.IsError);
         Assert.IsTrue(store.ShouldShowSaveError);
@@ -26,13 +26,30 @@ public sealed class AppStoreTests
         Assert.IsFalse(store.ShouldShowSaveError);
 
         service.SaveException = null;
-        await store.SaveAsync();
+        Assert.IsTrue(await store.SaveAsync());
 
         Assert.IsTrue(store.SaveResult.IsSuccess);
         Assert.IsFalse(store.ShouldShowSaveError);
         Assert.IsFalse(store.CanSave);
         Assert.IsTrue(app.BaselineLoopback);
         CollectionAssert.AreEqual(new[] { app.Sid }, service.LastSavedSids.ToArray());
+    }
+
+    [TestMethod]
+    public async Task ConcurrentSave_ReturnsFalseForTheRejectedInvocationAsync()
+    {
+        var service = new FakeLoopbackService { BlockSave = true };
+        using var store = new AppStore(service);
+        await store.ReloadAsync();
+        AssertSingleApp(store).Set(true);
+
+        var accepted = store.SaveAsync();
+        await service.SaveStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.IsFalse(await store.SaveAsync(), "the invocation rejected by the in-flight save must not inherit an older success state.");
+
+        service.ReleaseSave();
+        Assert.IsTrue(await accepted);
     }
 
     [TestMethod]

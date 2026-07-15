@@ -14,11 +14,11 @@
     with your signing certificate. Replace the files under Assets\ to re-brand.
   -->
 
-  <Identity Name="00873C42-079B-4B04-A472-7AD398035B6C" Publisher="CN=anranzhang" Version="1.0.0.0" />
+  <Identity Name="Richasy.LoopbackManager" Publisher="CN=Richasy" Version="1.0.0.0" />
 
   <Properties>
     <DisplayName>ms-resource:AppName</DisplayName>
-    <PublisherDisplayName>anranzhang</PublisherDisplayName>
+    <PublisherDisplayName>Richasy</PublisherDisplayName>
     <Logo>Assets\Logo\StoreLogo.png</Logo>
   </Properties>
 

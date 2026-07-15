@@ -52,7 +52,7 @@ public sealed partial class AppList : Control
                     RowSpacing = 8f,
                     ItemsStretch = UniformGridItemsStretch.Fill,
                 })
-                .Margin(0f, 8f)
+                .Margin(new Thickness(0f, 0f, 0f, 8f))
             )
             .Vertical(ScrollMode.Auto)
             .HorizontalScrollBar(ScrollBarVisibility.Hidden)
