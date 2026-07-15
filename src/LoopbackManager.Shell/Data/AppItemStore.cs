@@ -63,8 +63,12 @@ public sealed partial class AppItemStore
     /// <summary>Reverts the pending toggle to the saved baseline.</summary>
     public void Reset() => IsLoopback = BaselineLoopback;
 
-    /// <summary>Marks the current toggle as saved — the baseline becomes the current value, so the row is no longer "changed".</summary>
-    public void Commit() => BaselineLoopback = IsLoopback;
+    /// <summary>
+    /// Marks the value captured by a completed save as the new baseline. A newer toggle made while that save was in
+    /// flight remains pending instead of being incorrectly marked as persisted.
+    /// </summary>
+    /// <param name="savedValue">The value included in the completed save.</param>
+    public void Commit(bool savedValue) => BaselineLoopback = savedValue;
 
     /// <summary>Whether this row has a working directory that can be opened.</summary>
     public bool CanOpenFolder => !string.IsNullOrEmpty(WorkingDirectory);

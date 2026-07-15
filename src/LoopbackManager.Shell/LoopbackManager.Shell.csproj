@@ -30,9 +30,7 @@
     <!-- Self-contained needs a concrete architecture: default the inner-loop RID to the host's so `dotnet build`/`run`
          work; `dotnet publish -r win-x64` (or win-arm64) overrides it. -->
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
-    <SproutDefaultLanguage>zh-CN</SproutDefaultLanguage>
-    <!-- The neutral/default resource language MakePri stamps into the PRI, so a lookup has a fallback (silences PRI263). -->
-    <DefaultLanguage>zh-CN</DefaultLanguage>
+    <SproutDefaultLanguage>en-US</SproutDefaultLanguage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -70,10 +68,6 @@
     <!-- Opt-in MSIX packaging: `dotnet publish -r win-x64` then also produces a signed .msix (the self-contained
          WinAppSDK runtime is bundled inside it). No Windows App SDK MSIX tooling — the same Sprout packer is used. -->
     <PackageReference Include="Sprout.Packaging" Version="0.1.0-preview.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Strings\zh-CN\" />
   </ItemGroup>
 
   <ItemGroup>

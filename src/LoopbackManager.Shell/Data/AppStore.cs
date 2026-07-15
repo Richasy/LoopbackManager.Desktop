@@ -15,9 +15,13 @@ public sealed partial class AppStore
     private readonly ILoopbackService _service;
     private readonly LatestOperation<IReadOnlyList<AppItemStore>> _load;
     private readonly DroppableOperation<bool> _save;
+    private IReadOnlyList<SavedAppState> _saveSnapshot = [];
 
     /// <summary>The search keyword the list is filtered by — externally read-only, set via <see cref="SetFilter"/>.</summary>
     public partial string Filter { get; private set; }
+
+    /// <summary>Whether the user dismissed the current save failure.</summary>
+    public partial bool IsSaveErrorDismissed { get; private set; }
 
     /// <summary>Creates the store over an injected loopback service.</summary>
     /// <param name="service">The loopback domain surface (a real Win32 impl in the app, a fake in a test).</param>
@@ -32,7 +36,7 @@ public sealed partial class AppStore
     /// <summary>The loaded app rows — Idle → Loading → Success(rows) / Error. Render with the four phases.</summary>
     public AsyncValue<IReadOnlyList<AppItemStore>> Apps => _load.State;
 
-    /// <summary>The last save's result — Idle until saved, then Loading → Success(true) / Error (drive a tip off it).</summary>
+    /// <summary>The last save's result — Idle until saved, then Loading → Success(true) / Error.</summary>
     public AsyncValue<bool> SaveResult => _save.State;
 
     /// <summary>The rows matching the current <see cref="Filter"/> (by display name or package full name), sorted by display name (a stable order that does not jump when a row toggles).</summary>
@@ -64,15 +68,21 @@ public sealed partial class AppStore
     /// <summary>Whether a save is in flight.</summary>
     public bool IsSaving => SaveResult.IsLoading;
 
+    /// <summary>Whether the dismissible save-failure banner should be open.</summary>
+    public bool ShouldShowSaveError => SaveResult.IsError && !IsSaveErrorDismissed;
+
     /// <summary>Whether any row has a pending change (enables Save / Reset).</summary>
     public bool CanSave => Apps.Value?.Any(a => a.IsLoopbackChanged) ?? false;
 
     /// <summary>Whether any row is not yet exempt (enables Select-all).</summary>
     public bool CanSelectAll => Apps.Value?.Any(a => !a.IsLoopback) ?? false;
 
-    /// <summary>Loads (or reloads) the app list; a new reload cancels a previous in-flight one (latest-wins).</summary>
+    /// <summary>
+    /// Loads (or reloads) the app list; a new reload cancels a previous in-flight one (latest-wins). Reload is ignored
+    /// while a save is applying its full-set replacement so the list cannot be replaced with a stale concurrent read.
+    /// </summary>
     /// <returns>A task that completes when the load settles.</returns>
-    public Task ReloadAsync() => _load.Run();
+    public Task ReloadAsync() => _save.IsRunning ? Task.CompletedTask : _load.Run();
 
     /// <summary>Sets the search keyword (re-filters <see cref="FilteredApps"/> reactively).</summary>
     /// <param name="keyword">The new keyword (null treated as empty).</param>
@@ -104,13 +114,29 @@ public sealed partial class AppStore
     /// <returns>A task that completes when the save settles (or immediately if ignored).</returns>
     public async Task SaveAsync()
     {
-        await _save.Run();
+        if (_save.IsRunning || _load.IsRunning)
+        {
+            return;
+        }
+
+        var run = _save.Run();
+        IsSaveErrorDismissed = false;
+        await run;
         if (_save.State.IsSuccess)
         {
-            foreach (var app in Apps.Value ?? [])
+            foreach (var saved in _saveSnapshot)
             {
-                app.Commit();
+                saved.App.Commit(saved.IsLoopback);
             }
+        }
+    }
+
+    /// <summary>Dismisses the current save-failure banner without clearing the pending changes.</summary>
+    public void DismissSaveError()
+    {
+        if (SaveResult.IsError)
+        {
+            IsSaveErrorDismissed = true;
         }
     }
 
@@ -125,9 +151,16 @@ public sealed partial class AppStore
     // the run settles, not here, so the signal writes are not on a background continuation.
     private async Task<bool> SaveExemptionsAsync(CancellationToken cancellationToken)
     {
-        var apps = Apps.Value ?? [];
-        IReadOnlyList<string> exemptSids = apps.Where(a => a.IsLoopback).Select(a => a.Sid).ToList();
+        _saveSnapshot = (Apps.Value ?? [])
+            .Select(static app => new SavedAppState(app, app.IsLoopback))
+            .ToList();
+        IReadOnlyList<string> exemptSids = _saveSnapshot
+            .Where(static saved => saved.IsLoopback)
+            .Select(static saved => saved.App.Sid)
+            .ToList();
         await _service.SetExemptionsAsync(exemptSids, cancellationToken);
         return true;
     }
+
+    private readonly record struct SavedAppState(AppItemStore App, bool IsLoopback);
 }

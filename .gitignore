@@ -17,6 +17,7 @@
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
+.sprout-runner/
 bld/
 [Bb]in/
 [Oo]bj/

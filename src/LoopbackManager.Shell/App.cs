@@ -1,5 +1,4 @@
-﻿using LoopbackManager.Shell.Controls;
-using LoopbackManager.Shell.Toolkits;
+﻿using LoopbackManager.Shell.Toolkits;
 using Sprout;
 
 namespace LoopbackManager.Shell;
@@ -28,7 +27,6 @@ public sealed class App : Application
 
         _window.ActualThemeChanged += (_, _) => SyncBackground();
         _window.Closing += OnClosing;
-        _window.SetTitleBarContent(new AppTitleBarView());
         SyncBackground();
 
         _window.SetContent(new AppRoot());

@@ -120,6 +120,9 @@
   <data name="AppName" xml:space="preserve">
     <value>网络回环管理器</value>
   </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>管理应用的本地网络回环豁免。</value>
+  </data>
   <data name="LoadFailed" xml:space="preserve">
     <value>加载失败</value>
   </data>
@@ -146,6 +149,15 @@
   </data>
   <data name="Saved" xml:space="preserve">
     <value>已保存</value>
+  </data>
+  <data name="SaveFailedMessage" xml:space="preserve">
+    <value>无法保存你的更改，请重试。</value>
+  </data>
+  <data name="SaveFailedTitle" xml:space="preserve">
+    <value>无法保存更改</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>正在保存…</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
     <value>搜索应用名称</value>

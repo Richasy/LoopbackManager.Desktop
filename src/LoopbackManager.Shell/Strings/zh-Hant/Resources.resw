@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <data name="AppName" xml:space="preserve">
+    <value>網路回環管理器</value>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>管理應用程式的本機網路回環豁免。</value>
+  </data>
+  <data name="LoadFailed" xml:space="preserve">
+    <value>載入應用程式失敗</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>正在載入…</value>
+  </data>
+  <data name="NoApps" xml:space="preserve">
+    <value>找不到任何應用程式</value>
+  </data>
+  <data name="NoSearchResults" xml:space="preserve">
+    <value>找不到符合的應用程式</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>重新整理</value>
+  </data>
+  <data name="Reset" xml:space="preserve">
+    <value>重設</value>
+  </data>
+  <data name="Retry" xml:space="preserve">
+    <value>重試</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>儲存</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>已儲存</value>
+  </data>
+  <data name="SaveFailedMessage" xml:space="preserve">
+    <value>無法儲存您的變更，請再試一次。</value>
+  </data>
+  <data name="SaveFailedTitle" xml:space="preserve">
+    <value>無法儲存變更</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>正在儲存…</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>搜尋應用程式</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>全選</value>
+  </data>
+</root>

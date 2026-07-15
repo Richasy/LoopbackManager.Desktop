@@ -72,7 +72,7 @@ public sealed partial class AppList : Control
                 .Foreground(Theme.Resolve().Colors.TextFillColorSecondary)
                 .HAlign(HorizontalAlignment.Center),
             HyperlinkButton(Resources.Retry, HyperlinkButtonPalette.FromTheme(Theme.Resolve().Colors))
-                .OnNavigate(_ => _store.ReloadAsync())
+                .OnClick(OnRetry)
                 .HAlign(HorizontalAlignment.Center))
             .Spacing(8f)
             .HAlign(HorizontalAlignment.Center)
@@ -83,4 +83,6 @@ public sealed partial class AppList : Control
             .HAlign(HorizontalAlignment.Center)
             .VAlign(VerticalAlignment.Center)
             .Visible(ShowEmpty));
+
+    private void OnRetry() => _ = _store.ReloadAsync();
 }

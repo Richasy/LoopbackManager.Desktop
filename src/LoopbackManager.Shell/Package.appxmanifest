@@ -17,7 +17,7 @@
   <Identity Name="00873C42-079B-4B04-A472-7AD398035B6C" Publisher="CN=anranzhang" Version="1.0.0.0" />
 
   <Properties>
-    <DisplayName>LoopbackManager.Shell</DisplayName>
+    <DisplayName>ms-resource:AppName</DisplayName>
     <PublisherDisplayName>anranzhang</PublisherDisplayName>
     <Logo>Assets\Logo\StoreLogo.png</Logo>
   </Properties>
@@ -27,7 +27,7 @@
   </Dependencies>
 
   <Resources>
-    <Resource Language="en-us" />
+    <Resource Language="x-generate" />
   </Resources>
 
   <Applications>
@@ -38,13 +38,13 @@
       uap10:TrustLevel="mediumIL"
       uap10:RuntimeBehavior="packagedClassicApp">
       <uap:VisualElements
-        DisplayName="LoopbackManager.Shell"
-        Description="LoopbackManager.Shell"
+        DisplayName="ms-resource:AppName"
+        Description="ms-resource:AppDescription"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Logo\Square150x150Logo.png"
         Square44x44Logo="Assets\Logo\Square44x44Logo.png">
         <uap:DefaultTile
-          ShortName="LoopbackManager.Shell"
+          ShortName="ms-resource:AppName"
           Square71x71Logo="Assets\Logo\SmallTile.png"
           Square310x310Logo="Assets\Logo\LargeTile.png"
           Wide310x150Logo="Assets\Logo\Wide310x150Logo.png">

@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.ComponentModel;
+using System.Runtime.InteropServices;
 
 namespace LoopbackManager.Shell;
 
@@ -62,13 +63,13 @@ internal sealed partial class LoopbackService : ILoopbackService
                 var app = Marshal.PtrToStructure<INET_FIREWALL_APP_CONTAINER>(cursor);
                 cursor = IntPtr.Add(cursor, stride);
 
-                var sid = SidToString(app.appContainerSid);
                 var workingDirectory = Marshal.PtrToStringUni(app.workingDirectory) ?? string.Empty;
-                if (string.IsNullOrEmpty(sid) || string.IsNullOrEmpty(workingDirectory))
+                if (app.appContainerSid == IntPtr.Zero || string.IsNullOrEmpty(workingDirectory))
                 {
                     // Skip system/service containers with no SID or working directory (the original toolkit's filter).
                     continue;
                 }
+                var sid = SidToString(app.appContainerSid, "an enumerated AppContainer");
 
                 var packageFullName = Marshal.PtrToStringUni(app.packageFullName) ?? string.Empty;
                 var displayName = ResolveDisplayName(Marshal.PtrToStringUni(app.displayName));
@@ -96,30 +97,49 @@ internal sealed partial class LoopbackService : ILoopbackService
         return apps;
     }
 
-    // Reads the current loopback-exemption set as a set of string SIDs. The config array is owned by the API (the
-    // original toolkit does not free it), so it is only read, not freed.
+    // Reads the current loopback-exemption set as a set of string SIDs.
     private static HashSet<string> GetExemptSids()
     {
         var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         var result = NetworkIsolationGetAppContainerConfig(out var count, out var configPtr);
-        if (result != ErrorSuccess || configPtr == IntPtr.Zero || count == 0)
+        if (result != ErrorSuccess)
         {
-            return set;
+            throw new Win32Exception(
+                unchecked((int)result),
+                $"NetworkIsolationGetAppContainerConfig failed (0x{result:X8}).");
         }
 
-        var stride = Marshal.SizeOf<SID_AND_ATTRIBUTES>();
-        var cursor = configPtr;
-        for (uint i = 0; i < count; i++)
+        if (configPtr == IntPtr.Zero)
         {
-            var entry = Marshal.PtrToStructure<SID_AND_ATTRIBUTES>(cursor);
-            cursor = IntPtr.Add(cursor, stride);
-
-            var sid = SidToString(entry.Sid);
-            if (!string.IsNullOrEmpty(sid))
+            if (count == 0)
             {
+                return set;
+            }
+
+            throw new InvalidOperationException(
+                "NetworkIsolationGetAppContainerConfig returned entries without a configuration buffer.");
+        }
+
+        try
+        {
+            var stride = Marshal.SizeOf<SID_AND_ATTRIBUTES>();
+            var cursor = configPtr;
+            for (uint i = 0; i < count; i++)
+            {
+                var entry = Marshal.PtrToStructure<SID_AND_ATTRIBUTES>(cursor);
+                cursor = IntPtr.Add(cursor, stride);
+                if (entry.Sid == IntPtr.Zero)
+                {
+                    continue;
+                }
+                var sid = SidToString(entry.Sid, "the loopback exemption configuration");
                 _ = set.Add(sid);
             }
+        }
+        finally
+        {
+            FreeAppContainerConfig(configPtr, count);
         }
 
         return set;
@@ -127,17 +147,33 @@ internal sealed partial class LoopbackService : ILoopbackService
 
     private static void SetExemptions(IReadOnlyList<string> exemptSids)
     {
-        var entries = new List<SID_AND_ATTRIBUTES>(exemptSids.Count);
-        var allocated = new List<IntPtr>(exemptSids.Count);
+        var desired = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var sid in exemptSids)
+        {
+            if (string.IsNullOrWhiteSpace(sid))
+            {
+                throw new InvalidOperationException("The loopback exemption set contains an invalid SID.");
+            }
+
+            _ = desired.Add(sid);
+        }
+
+        var entries = new List<SID_AND_ATTRIBUTES>(desired.Count);
+        var allocated = new List<IntPtr>(desired.Count);
         try
         {
-            foreach (var sid in exemptSids)
+            foreach (var sid in desired)
             {
-                if (ConvertStringSidToSidW(sid, out var sidPtr) && sidPtr != IntPtr.Zero)
+                if (!ConvertStringSidToSidW(sid, out var sidPtr) || sidPtr == IntPtr.Zero)
                 {
-                    allocated.Add(sidPtr);
-                    entries.Add(new SID_AND_ATTRIBUTES { Sid = sidPtr, Attributes = 0 });
+                    var error = Marshal.GetLastPInvokeError();
+                    throw new Win32Exception(
+                        error,
+                        $"ConvertStringSidToSidW failed for '{sid}' (0x{error:X8}).");
                 }
+
+                allocated.Add(sidPtr);
+                entries.Add(new SID_AND_ATTRIBUTES { Sid = sidPtr, Attributes = 0 });
             }
 
             // A full-set replace: passing the complete exempt list (count 0 clears every exemption).
@@ -145,7 +181,16 @@ internal sealed partial class LoopbackService : ILoopbackService
             var result = NetworkIsolationSetAppContainerConfig((uint)array.Length, array);
             if (result != ErrorSuccess)
             {
-                throw new InvalidOperationException($"NetworkIsolationSetAppContainerConfig failed (0x{result:X8}).");
+                throw new Win32Exception(
+                    unchecked((int)result),
+                    $"NetworkIsolationSetAppContainerConfig failed (0x{result:X8}).");
+            }
+
+            var persisted = GetExemptSids();
+            if (!persisted.SetEquals(desired))
+            {
+                throw new InvalidOperationException(
+                    "The loopback exemption configuration did not match the requested state after saving.");
             }
         }
         finally
@@ -159,20 +204,65 @@ internal sealed partial class LoopbackService : ILoopbackService
 
     // Converts a native SID pointer to its string form. ConvertSidToStringSidW LocalAlloc's the string, so it is copied
     // out and freed.
-    private static string SidToString(IntPtr sid)
+    private static string SidToString(IntPtr sid, string source)
     {
-        if (sid == IntPtr.Zero || !ConvertSidToStringSidW(sid, out var stringSid) || stringSid == IntPtr.Zero)
+        if (sid == IntPtr.Zero)
         {
-            return string.Empty;
+            throw new InvalidOperationException($"NetworkIsolation returned a null SID for {source}.");
+        }
+
+        if (!ConvertSidToStringSidW(sid, out var stringSid))
+        {
+            var error = Marshal.GetLastPInvokeError();
+            throw new Win32Exception(
+                error,
+                $"ConvertSidToStringSidW failed for {source} (0x{error:X8}).");
+        }
+        if (stringSid == IntPtr.Zero)
+        {
+            throw new InvalidOperationException($"ConvertSidToStringSidW returned no value for {source}.");
         }
 
         try
         {
-            return Marshal.PtrToStringUni(stringSid) ?? string.Empty;
+            return Marshal.PtrToStringUni(stringSid)
+                ?? throw new InvalidOperationException($"ConvertSidToStringSidW returned invalid text for {source}.");
         }
         finally
         {
             _ = LocalFree(stringSid);
+        }
+    }
+
+    // NetworkIsolationGetAppContainerConfig allocates each SID and the outer array from the process heap.
+    private static void FreeAppContainerConfig(IntPtr configPtr, uint count)
+    {
+        var processHeap = GetProcessHeap();
+        if (processHeap == IntPtr.Zero)
+        {
+            throw new InvalidOperationException("GetProcessHeap returned no process heap.");
+        }
+
+        var stride = Marshal.SizeOf<SID_AND_ATTRIBUTES>();
+        var cursor = configPtr;
+        var freeFailed = false;
+        for (uint i = 0; i < count; i++)
+        {
+            var entry = Marshal.PtrToStructure<SID_AND_ATTRIBUTES>(cursor);
+            cursor = IntPtr.Add(cursor, stride);
+            if (entry.Sid != IntPtr.Zero && !HeapFree(processHeap, 0, entry.Sid))
+            {
+                freeFailed = true;
+            }
+        }
+
+        if (!HeapFree(processHeap, 0, configPtr))
+        {
+            freeFailed = true;
+        }
+        if (freeFailed)
+        {
+            throw new InvalidOperationException("Failed to free loopback configuration memory.");
         }
     }
 
@@ -225,6 +315,13 @@ internal sealed partial class LoopbackService : ILoopbackService
 
     [LibraryImport("kernel32.dll")]
     private static partial IntPtr LocalFree(IntPtr handle);
+
+    [LibraryImport("kernel32.dll")]
+    private static partial IntPtr GetProcessHeap();
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool HeapFree(IntPtr heap, uint flags, IntPtr memory);
 
     // Blittable mirrors of the FirewallAPI structs: every LPWStr field is an IntPtr (read with PtrToStringUni), so the
     // whole struct is blittable and PtrToStructure needs no marshaller — the NativeAOT-safe shape.

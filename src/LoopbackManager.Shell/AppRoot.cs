@@ -1,7 +1,7 @@
 ﻿using LoopbackManager.Shell.Controls;
 
 using Sprout;
-using Sprout.Graphics;
+using Sprout.Controls;
 using Sprout.Layout;
 
 using static Sprout.Markup;
@@ -9,22 +9,30 @@ using static Sprout.Markup;
 namespace LoopbackManager.Shell;
 
 /// <summary>
-/// The window content — the app's vertical composition: the search/save <see cref="AppHeader"/> on top, the (future)
-/// app list filling the middle, and the <see cref="AppFooter"/> actions at the bottom. Each section is its own control
-/// that reads the shared <see cref="AppStore"/> ambiently, so this root only <b>lays them out</b>: a single-column,
-/// three-row grid (auto / star / auto). The single column also sidesteps the column-span sizing issue a shared
-/// two-column grid hit — the header and footer never share a track with each other.
+/// The window content — the app's vertical composition: the search/save <see cref="AppHeader"/>, a dismissible save
+/// error banner, the app list, and the <see cref="AppFooter"/> actions. Each section reads the shared
+/// <see cref="AppStore"/> ambiently; this root only lays them out.
 /// </summary>
 public sealed partial class AppRoot : Control
 {
+    private readonly AppStore _store;
+
+    public AppRoot() => _store = Application.Current.Services.GetRequiredService<AppStore>();
+
     public Ui Body => Grid(
         [GridLength.Star()],
-        [GridLength.Auto, GridLength.Star(), GridLength.Auto],
+        [GridLength.Auto, GridLength.Auto, GridLength.Star(), GridLength.Auto],
         new AppHeader()
-            .Margin(new Thickness(0f, 0f, 0f, 12f))
             .Cell(0, 0),
-        new AppList()
+        InfoBar(Resources.SaveFailedTitle, Resources.SaveFailedMessage)
+            .Severity(InfoBarSeverity.Error)
+            .Closable(true)
+            .Open(_store.ShouldShowSaveError)
+            .OnClosed(_ => _store.DismissSaveError())
+            .Margin(12f, 0f)
             .Cell(0, 1),
+        new AppList()
+            .Cell(0, 2),
         new AppFooter()
-            .Cell(0, 2));
+            .Cell(0, 3));
 }

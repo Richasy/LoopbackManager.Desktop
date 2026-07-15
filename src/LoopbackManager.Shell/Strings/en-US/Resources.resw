@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <data name="AppName" xml:space="preserve">
+    <value>Loopback Manager</value>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>Manage local network loopback exemptions for apps.</value>
+  </data>
+  <data name="LoadFailed" xml:space="preserve">
+    <value>Failed to load apps</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading…</value>
+  </data>
+  <data name="NoApps" xml:space="preserve">
+    <value>No apps found</value>
+  </data>
+  <data name="NoSearchResults" xml:space="preserve">
+    <value>No matching apps</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Saved</value>
+  </data>
+  <data name="SaveFailedMessage" xml:space="preserve">
+    <value>Your changes couldn't be saved. Please try again.</value>
+  </data>
+  <data name="SaveFailedTitle" xml:space="preserve">
+    <value>Couldn't save changes</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>Saving…</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Search apps</value>
+  </data>
+  <data name="SelectAll" xml:space="preserve">
+    <value>Select all</value>
+  </data>
+</root>

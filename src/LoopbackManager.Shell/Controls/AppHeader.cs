@@ -38,22 +38,24 @@ public sealed partial class AppHeader : Control
         Button(
             Stack(
                 Icon.Fluent(FluentSymbol.Checkmark, size: 14).Visible(_justSaved.Value),
-                AnimatedText(_justSaved.Value ? Resources.Saved : Resources.Save))
+                AnimatedText(_store.IsSaving
+                    ? Resources.Saving
+                    : _justSaved.Value ? Resources.Saved : Resources.Save))
                 .Orientation(Orientation.Horizontal)
                 .Spacing(6)
                 .HAlign(HorizontalAlignment.Center)
                 .VAlign(VerticalAlignment.Center),
             OnSave,
             ButtonPalette.FromTheme(Theme.Resolve().Colors, ButtonColorScheme.Accent))
-            .Enabled(_store.CanSave && !_justSaved.Value)
+            .Enabled(_store.CanSave && !_store.IsLoading && !_store.IsSaving && !_justSaved.Value)
             .VAlign(VerticalAlignment.Stretch)
             .MinWidth(120)
             .Cell(1, 0))
         .ColumnSpacing(12)
         .Padding(12, 8);
 
-    // Saves the pending exemptions, then flashes the button to a confirmed state — a check icon appears and the label
-    // rolls "保存" → "已保存" — for 3 seconds before rolling back. The button is disabled during the confirmation.
+    // Saves the pending exemptions, then briefly flashes the button to a confirmed state. A failure remains pending and
+    // is surfaced by the dismissible InfoBar in AppRoot.
     private void OnSave() => _ = SaveAndConfirmAsync();
 
     private async Task SaveAndConfirmAsync()

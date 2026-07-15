@@ -26,10 +26,11 @@ public sealed partial class AppCard : Control
                 .FontSize(12)
                 .Foreground(Theme.Resolve().Colors.TextFillColorSecondary)
                 .Trim(TextTrimming.CharacterEllipsis)
-                .TooltipWhenTrimmed()).Spacing(4),
+                .TooltipWhenTrimmed()).Spacing(2),
             _itemStore.IsLoopback,
             _itemStore.Toggle,
             CheckBoxPalette.FromTheme(Theme.Resolve().Colors))
+            .ContentSpacing(12f)
             .HorizontalContentAlignment(HorizontalAlignment.Stretch)
             .Automation(new() { Name = _itemStore.DisplayName })
             .VAlign(VerticalAlignment.Center)
