@@ -9,8 +9,8 @@ public interface ILoopbackService
 {
     /// <summary>Enumerates every AppContainer on the system with its current loopback-exemption state.</summary>
     /// <param name="cancellationToken">Cancelled on a superseding reload or the store's disposal.</param>
-    /// <returns>The AppContainers.</returns>
-    Task<IReadOnlyList<AppContainerInfo>> GetAppsAsync(CancellationToken cancellationToken);
+    /// <returns>The visible AppContainers, hidden exemptions to preserve, and any non-fatal diagnostics.</returns>
+    Task<AppEnumerationResult> GetAppsAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Sets the <b>entire</b> loopback-exemption set to exactly <paramref name="exemptSids"/>. The underlying Win32

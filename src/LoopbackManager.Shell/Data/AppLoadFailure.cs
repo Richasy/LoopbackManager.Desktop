@@ -75,7 +75,7 @@ public readonly record struct AppLoadFailure(AppLoadFailureKind Kind, string Det
     {
         5 => AppLoadFailureKind.AccessDenied,
         8 or 14 => AppLoadFailureKind.ResourceExhausted,
-        13 or 1336 or 1337 or 1338 => AppLoadFailureKind.InvalidSystemConfiguration,
+        13 or 1336 or 1337 or 1338 or 1780 => AppLoadFailureKind.InvalidSystemConfiguration,
         50 or 87 or 120 => AppLoadFailureKind.UnsupportedSystem,
         126 or 127 or 193 => AppLoadFailureKind.MissingSystemComponent,
         1058 or 1060 or 1062 or 1068 or 1075 or 1722 or 1753

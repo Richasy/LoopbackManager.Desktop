@@ -13,7 +13,7 @@ namespace LoopbackManager.Shell;
 public sealed partial class AppStore
 {
     private readonly ILoopbackService _service;
-    private readonly LatestOperation<IReadOnlyList<AppItemStore>> _load;
+    private readonly LatestOperation<AppLoadSnapshot> _load;
     private readonly DroppableOperation<bool> _save;
     private IReadOnlyList<SavedAppState> _saveSnapshot = [];
 
@@ -31,15 +31,15 @@ public sealed partial class AppStore
         _service = service;
         Filter = string.Empty;
         _load = scheduler is null
-            ? new LatestOperation<IReadOnlyList<AppItemStore>>(LoadAppsAsync, Lifetime)
-            : new LatestOperation<IReadOnlyList<AppItemStore>>(LoadAppsAsync, scheduler, Lifetime);
+            ? new LatestOperation<AppLoadSnapshot>(LoadAppsAsync, Lifetime)
+            : new LatestOperation<AppLoadSnapshot>(LoadAppsAsync, scheduler, Lifetime);
         _save = scheduler is null
             ? new DroppableOperation<bool>(SaveExemptionsAsync, Lifetime)
             : new DroppableOperation<bool>(SaveExemptionsAsync, scheduler, Lifetime);
     }
 
     /// <summary>The loaded app rows — Idle → Loading → Success(rows) / Error. Render with the four phases.</summary>
-    public AsyncValue<IReadOnlyList<AppItemStore>> Apps => _load.State;
+    public AsyncValue<AppLoadSnapshot> Apps => _load.State;
 
     /// <summary>The current load error classified for actionable UI guidance, or <see cref="AppLoadFailureKind.None"/>.</summary>
     public AppLoadFailure LoadFailure => AppLoadFailure.From(Apps.Error);
@@ -52,7 +52,7 @@ public sealed partial class AppStore
     {
         get
         {
-            var all = Apps.Value ?? [];
+            IReadOnlyList<AppItemStore> all = Apps.Value?.Items ?? [];
             var filtered = string.IsNullOrWhiteSpace(Filter)
                 ? all
                 : all.Where(a => a.DisplayName.Contains(Filter, StringComparison.OrdinalIgnoreCase)
@@ -65,7 +65,7 @@ public sealed partial class AppStore
     }
 
     /// <summary>Whether a load succeeded but produced no apps.</summary>
-    public bool IsEmpty => Apps.IsSuccess && (Apps.Value?.Count ?? 0) == 0;
+    public bool IsEmpty => Apps.IsSuccess && (Apps.Value?.Items.Count ?? 0) == 0;
 
     /// <summary>Whether the load failed.</summary>
     public bool IsFailed => Apps.IsError;
@@ -79,11 +79,14 @@ public sealed partial class AppStore
     /// <summary>Whether the dismissible save-failure banner should be open.</summary>
     public bool ShouldShowSaveError => SaveResult.IsError && !IsSaveErrorDismissed;
 
+    /// <summary>Whether loading succeeded in best-effort mode and the UI should disclose that some data may be absent.</summary>
+    public bool ShouldShowPartialLoadWarning => Apps.IsSuccess && Apps.Value?.Diagnostics.IsPartial == true;
+
     /// <summary>Whether any row has a pending change (enables Save / Reset).</summary>
-    public bool CanSave => Apps.Value?.Any(a => a.IsLoopbackChanged) ?? false;
+    public bool CanSave => Apps.Value?.Items.Any(a => a.IsLoopbackChanged) ?? false;
 
     /// <summary>Whether any row is not yet exempt (enables Select-all).</summary>
-    public bool CanSelectAll => Apps.Value?.Any(a => !a.IsLoopback) ?? false;
+    public bool CanSelectAll => Apps.Value?.Items.Any(a => !a.IsLoopback) ?? false;
 
     /// <summary>
     /// Loads (or reloads) the app list; a new reload cancels a previous in-flight one (latest-wins). Reload is ignored
@@ -99,7 +102,7 @@ public sealed partial class AppStore
     /// <summary>Marks every row as exempt (the "select all" action).</summary>
     public void SelectAll()
     {
-        foreach (var app in Apps.Value ?? [])
+        foreach (var app in Apps.Value?.Items ?? [])
         {
             app.Set(true);
         }
@@ -108,7 +111,7 @@ public sealed partial class AppStore
     /// <summary>Reverts every row's pending toggle to its saved baseline (the "reset all" action).</summary>
     public void ResetAll()
     {
-        foreach (var app in Apps.Value ?? [])
+        foreach (var app in Apps.Value?.Items ?? [])
         {
             app.Reset();
         }
@@ -153,22 +156,29 @@ public sealed partial class AppStore
     }
 
     // The latest-wins load work: fetch the snapshots and wrap each in a per-row store.
-    private async Task<IReadOnlyList<AppItemStore>> LoadAppsAsync(CancellationToken cancellationToken)
+    private async Task<AppLoadSnapshot> LoadAppsAsync(CancellationToken cancellationToken)
     {
-        var infos = await _service.GetAppsAsync(cancellationToken);
-        return infos.Select(static info => new AppItemStore(info)).ToList();
+        var result = await _service.GetAppsAsync(cancellationToken);
+        return new AppLoadSnapshot(
+            result.Apps.Select(static info => new AppItemStore(info)).ToList(),
+            result.PreservedExemptSids,
+            result.Diagnostics);
     }
 
     // The droppable save work: push the whole exempt set (a full replace). Baseline commit happens in SaveAsync after
     // the run settles, not here, so the signal writes are not on a background continuation.
     private async Task<bool> SaveExemptionsAsync(CancellationToken cancellationToken)
     {
-        _saveSnapshot = (Apps.Value ?? [])
+        var loaded = Apps.Value;
+        _saveSnapshot = (loaded?.Items ?? [])
             .Select(static app => new SavedAppState(app, app.IsLoopback))
             .ToList();
         IReadOnlyList<string> exemptSids = _saveSnapshot
             .Where(static saved => saved.IsLoopback)
             .Select(static saved => saved.App.Sid)
+            .Concat(loaded?.PreservedExemptSids ?? [])
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
             .ToList();
         await _service.SetExemptionsAsync(exemptSids, cancellationToken);
         return true;

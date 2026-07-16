@@ -162,6 +162,18 @@
   <data name="OpenWorkDirectory" xml:space="preserve">
     <value>打开工作目录</value>
   </data>
+  <data name="PartialLoadFallbackMessage" xml:space="preserve">
+    <value>Windows 无法批量枚举 AppContainer，已切换到逐包兼容模式；当前已显示所有可读取的应用。</value>
+  </data>
+  <data name="PartialLoadFallbackSkippedMessage" xml:space="preserve">
+    <value>Windows 无法批量枚举 AppContainer，已切换到逐包兼容模式，并跳过了 {0} 个无法读取的包。</value>
+  </data>
+  <data name="PartialLoadSkippedMessage" xml:space="preserve">
+    <value>有 {0} 个应用条目的信息无效，已将其跳过；其余应用仍正常显示。</value>
+  </data>
+  <data name="PartialLoadTitle" xml:space="preserve">
+    <value>部分应用未能加载</value>
+  </data>
   <data name="Refresh" xml:space="preserve">
     <value>刷新</value>
   </data>

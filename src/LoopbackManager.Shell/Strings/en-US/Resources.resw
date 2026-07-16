@@ -51,6 +51,18 @@
   <data name="OpenWorkDirectory" xml:space="preserve">
     <value>Open working directory</value>
   </data>
+  <data name="PartialLoadFallbackMessage" xml:space="preserve">
+    <value>Windows couldn't enumerate AppContainers as a batch, so compatible per-package enumeration is being used. All readable apps are shown.</value>
+  </data>
+  <data name="PartialLoadFallbackSkippedMessage" xml:space="preserve">
+    <value>Windows couldn't enumerate AppContainers as a batch, so compatible per-package enumeration is being used. {0} unreadable package(s) were skipped.</value>
+  </data>
+  <data name="PartialLoadSkippedMessage" xml:space="preserve">
+    <value>{0} app entry or entries returned invalid metadata and were skipped. All other apps are shown.</value>
+  </data>
+  <data name="PartialLoadTitle" xml:space="preserve">
+    <value>Some apps couldn't be loaded</value>
+  </data>
   <data name="Refresh" xml:space="preserve">
     <value>Refresh</value>
   </data>

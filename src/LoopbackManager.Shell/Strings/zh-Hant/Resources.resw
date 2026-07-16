@@ -51,6 +51,18 @@
   <data name="OpenWorkDirectory" xml:space="preserve">
     <value>打開工作目錄</value>
   </data>
+  <data name="PartialLoadFallbackMessage" xml:space="preserve">
+    <value>Windows 無法批次列舉 AppContainer，已切換到逐套件相容模式；目前已顯示所有可讀取的應用程式。</value>
+  </data>
+  <data name="PartialLoadFallbackSkippedMessage" xml:space="preserve">
+    <value>Windows 無法批次列舉 AppContainer，已切換到逐套件相容模式，並略過了 {0} 個無法讀取的套件。</value>
+  </data>
+  <data name="PartialLoadSkippedMessage" xml:space="preserve">
+    <value>有 {0} 個應用程式項目的資訊無效，已將其略過；其餘應用程式仍正常顯示。</value>
+  </data>
+  <data name="PartialLoadTitle" xml:space="preserve">
+    <value>部分應用程式未能載入</value>
+  </data>
   <data name="Refresh" xml:space="preserve">
     <value>重新整理</value>
   </data>

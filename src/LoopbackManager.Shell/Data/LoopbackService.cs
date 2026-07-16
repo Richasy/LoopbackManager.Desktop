@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
+using Windows.ApplicationModel;
+using Windows.Management.Deployment;
 
 namespace LoopbackManager.Shell;
 
@@ -25,34 +27,71 @@ namespace LoopbackManager.Shell;
 internal sealed partial class LoopbackService : ILoopbackService
 {
     private const uint NetisoFlagsNone = 0;
+    private const uint NetisoFlagForceComputeBinaries = 0x1;
     private const uint ErrorSuccess = 0;
+    private const uint RpcXNullRefPointer = 1780;
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<AppContainerInfo>> GetAppsAsync(CancellationToken cancellationToken)
+    public Task<AppEnumerationResult> GetAppsAsync(CancellationToken cancellationToken)
         => Task.Run(() => GetApps(cancellationToken), cancellationToken);
 
     /// <inheritdoc/>
     public Task SetExemptionsAsync(IReadOnlyList<string> exemptSids, CancellationToken cancellationToken)
         => Task.Run(() => SetExemptions(exemptSids), cancellationToken);
 
-    private static IReadOnlyList<AppContainerInfo> GetApps(CancellationToken cancellationToken)
+    private static AppEnumerationResult GetApps(CancellationToken cancellationToken)
     {
-        // The SIDs that currently have a loopback exemption — a set the enumeration below tests each app against.
         var exempt = GetExemptSids();
+        if (TryGetAppsFromFirewall(exempt, cancellationToken, out var result, out var batchFailure))
+        {
+            return result;
+        }
 
-        // NETISO_FLAG_MAX is the enum sentinel, not a usable flag. We do not consume binary metadata, so pass no flags.
-        var enumResult = NetworkIsolationEnumAppContainers(NetisoFlagsNone, out var count, out var appsPtr);
+        return GetAppsFromPackages(exempt, cancellationToken, batchFailure);
+    }
+
+    private static bool TryGetAppsFromFirewall(
+        HashSet<string> exempt,
+        CancellationToken cancellationToken,
+        out AppEnumerationResult result,
+        out Win32Exception batchFailure)
+    {
+        uint count = 0;
+        var appsPtr = IntPtr.Zero;
+        var enumResult = NetworkIsolationEnumAppContainers(NetisoFlagsNone, ref count, ref appsPtr);
+        if (enumResult == RpcXNullRefPointer && appsPtr == IntPtr.Zero)
+        {
+            // Retry once with freshly computed binary metadata, as Microsoft's WFPSampler does. This is best-effort;
+            // per-package enumeration below remains the recovery path if the batch RPC still fails.
+            count = 0;
+            enumResult = NetworkIsolationEnumAppContainers(
+                NetisoFlagForceComputeBinaries,
+                ref count,
+                ref appsPtr);
+        }
+
         if (enumResult != ErrorSuccess)
         {
-            throw CreateWin32Exception(enumResult, nameof(NetworkIsolationEnumAppContainers));
+            if (appsPtr != IntPtr.Zero)
+            {
+                NetworkIsolationFreeAppContainers(appsPtr);
+            }
+
+            result = null!;
+            batchFailure = CreateWin32Exception(enumResult, nameof(NetworkIsolationEnumAppContainers));
+            return false;
         }
 
         if (appsPtr == IntPtr.Zero || count == 0)
         {
-            return [];
+            result = CreateEnumerationResult([], exempt, AppEnumerationDiagnostics.None);
+            batchFailure = null!;
+            return true;
         }
 
         var apps = new List<AppContainerInfo>((int)count);
+        var visibleSids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var skippedCount = 0;
         try
         {
             var stride = Marshal.SizeOf<INET_FIREWALL_APP_CONTAINER>();
@@ -60,34 +99,29 @@ internal sealed partial class LoopbackService : ILoopbackService
             for (uint i = 0; i < count; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
-                var app = Marshal.PtrToStructure<INET_FIREWALL_APP_CONTAINER>(cursor);
+                var entryPtr = cursor;
                 cursor = IntPtr.Add(cursor, stride);
 
-                var workingDirectory = Marshal.PtrToStringUni(app.workingDirectory) ?? string.Empty;
-                if (app.appContainerSid == IntPtr.Zero || string.IsNullOrEmpty(workingDirectory))
+                try
                 {
-                    // Skip system/service containers with no SID or working directory (the original toolkit's filter).
-                    continue;
+                    var app = Marshal.PtrToStructure<INET_FIREWALL_APP_CONTAINER>(entryPtr);
+                    if (TryCreateFirewallApp(app, exempt, out var info) && visibleSids.Add(info.Sid))
+                    {
+                        apps.Add(info);
+                    }
                 }
-                var sid = SidToString(app.appContainerSid, "an enumerated AppContainer");
-
-                var packageFullName = Marshal.PtrToStringUni(app.packageFullName) ?? string.Empty;
-                var displayName = ResolveDisplayName(Marshal.PtrToStringUni(app.displayName));
-                if (string.IsNullOrEmpty(displayName))
+                catch (Win32Exception)
                 {
-                    displayName = packageFullName;
+                    skippedCount++;
                 }
-
-                var containerName = Marshal.PtrToStringUni(app.appContainerName) ?? string.Empty;
-
-                apps.Add(new AppContainerInfo(
-                    containerName,
-                    displayName,
-                    workingDirectory,
-                    sid,
-                    packageFullName,
-                    exempt.Contains(sid)));
+                catch (InvalidDataException)
+                {
+                    skippedCount++;
+                }
+                catch (ArgumentException)
+                {
+                    skippedCount++;
+                }
             }
         }
         finally
@@ -95,15 +129,213 @@ internal sealed partial class LoopbackService : ILoopbackService
             NetworkIsolationFreeAppContainers(appsPtr);
         }
 
-        return apps;
+        result = CreateEnumerationResult(
+            apps,
+            exempt,
+            new AppEnumerationDiagnostics(false, skippedCount, null));
+        batchFailure = null!;
+        return true;
     }
+
+    private static bool TryCreateFirewallApp(
+        INET_FIREWALL_APP_CONTAINER app,
+        HashSet<string> exempt,
+        out AppContainerInfo info)
+    {
+        var workingDirectory = Marshal.PtrToStringUni(app.workingDirectory) ?? string.Empty;
+        if (app.appContainerSid == IntPtr.Zero || string.IsNullOrEmpty(workingDirectory))
+        {
+            info = null!;
+            return false;
+        }
+
+        var sid = SidToString(app.appContainerSid, "an enumerated AppContainer");
+        var packageFullName = Marshal.PtrToStringUni(app.packageFullName) ?? string.Empty;
+        var displayName = ResolveDisplayName(Marshal.PtrToStringUni(app.displayName));
+        if (string.IsNullOrEmpty(displayName))
+        {
+            displayName = packageFullName;
+        }
+
+        info = new AppContainerInfo(
+            Marshal.PtrToStringUni(app.appContainerName) ?? string.Empty,
+            displayName,
+            workingDirectory,
+            sid,
+            packageFullName,
+            exempt.Contains(sid));
+        return true;
+    }
+
+    private static AppEnumerationResult GetAppsFromPackages(
+        HashSet<string> exempt,
+        CancellationToken cancellationToken,
+        Win32Exception batchFailure)
+    {
+        var apps = new List<AppContainerInfo>();
+        var visibleSids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var skippedCount = 0;
+
+        try
+        {
+            var packages = new PackageManager()
+                .FindPackagesForUserWithPackageTypes(string.Empty, PackageTypes.Main);
+            foreach (var package in packages)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                try
+                {
+                    if (TryCreatePackageApp(package, exempt, out var info) && visibleSids.Add(info.Sid))
+                    {
+                        apps.Add(info);
+                    }
+                }
+                catch (COMException)
+                {
+                    skippedCount++;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    skippedCount++;
+                }
+                catch (Win32Exception)
+                {
+                    skippedCount++;
+                }
+                catch (InvalidDataException)
+                {
+                    skippedCount++;
+                }
+                catch (ArgumentException)
+                {
+                    skippedCount++;
+                }
+                catch (FileNotFoundException)
+                {
+                    skippedCount++;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    skippedCount++;
+                }
+                catch (InvalidOperationException)
+                {
+                    skippedCount++;
+                }
+            }
+        }
+        catch (COMException fallbackFailure)
+        {
+            throw CreateFallbackFailure(batchFailure, fallbackFailure);
+        }
+        catch (UnauthorizedAccessException fallbackFailure)
+        {
+            throw CreateFallbackFailure(batchFailure, fallbackFailure);
+        }
+        catch (FileNotFoundException fallbackFailure)
+        {
+            throw CreateFallbackFailure(batchFailure, fallbackFailure);
+        }
+
+        return CreateEnumerationResult(
+            apps,
+            exempt,
+            new AppEnumerationDiagnostics(
+                true,
+                skippedCount,
+                AppLoadFailure.From(batchFailure).Details));
+    }
+
+    private static bool TryCreatePackageApp(
+        Package package,
+        HashSet<string> exempt,
+        out AppContainerInfo info)
+    {
+        var familyName = package.Id.FamilyName;
+        var packageFullName = package.Id.FullName;
+        var workingDirectory = package.InstalledLocation?.Path ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(familyName) || string.IsNullOrWhiteSpace(workingDirectory))
+        {
+            info = null!;
+            return false;
+        }
+
+        var sid = DeriveAppContainerSid(familyName);
+        var displayName = ResolveDisplayName(package.DisplayName);
+        if (string.IsNullOrEmpty(displayName))
+        {
+            displayName = string.IsNullOrEmpty(package.Id.Name) ? packageFullName : package.Id.Name;
+        }
+
+        info = new AppContainerInfo(
+            familyName,
+            displayName,
+            workingDirectory,
+            sid,
+            packageFullName,
+            exempt.Contains(sid));
+        return true;
+    }
+
+    private static string DeriveAppContainerSid(string appContainerName)
+    {
+        var sidPtr = IntPtr.Zero;
+        var result = DeriveAppContainerSidFromAppContainerName(appContainerName, ref sidPtr);
+        if (result != 0)
+        {
+            throw new COMException(
+                $"DeriveAppContainerSidFromAppContainerName failed for '{appContainerName}' (0x{unchecked((uint)result):X8}).",
+                result);
+        }
+        if (sidPtr == IntPtr.Zero)
+        {
+            throw new InvalidDataException(
+                $"DeriveAppContainerSidFromAppContainerName returned no SID for '{appContainerName}'.");
+        }
+
+        try
+        {
+            return SidToString(sidPtr, $"the AppContainer '{appContainerName}'");
+        }
+        finally
+        {
+            if (FreeSid(sidPtr) != IntPtr.Zero)
+            {
+                throw new InvalidOperationException(
+                    $"Failed to free the derived SID for AppContainer '{appContainerName}'.");
+            }
+        }
+    }
+
+    private static AppEnumerationResult CreateEnumerationResult(
+        IReadOnlyList<AppContainerInfo> apps,
+        HashSet<string> exempt,
+        AppEnumerationDiagnostics diagnostics)
+    {
+        var visibleSids = apps.Select(static app => app.Sid).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var preservedExemptSids = exempt
+            .Where(sid => !visibleSids.Contains(sid))
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        return new AppEnumerationResult(apps, preservedExemptSids, diagnostics);
+    }
+
+    private static AggregateException CreateFallbackFailure(
+        Win32Exception batchFailure,
+        Exception fallbackFailure)
+        => new(
+            "Both FirewallAPI batch enumeration and per-package AppContainer enumeration failed.",
+            fallbackFailure,
+            batchFailure);
 
     // Reads the current loopback-exemption set as a set of string SIDs.
     private static HashSet<string> GetExemptSids()
     {
         var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        var result = NetworkIsolationGetAppContainerConfig(out var count, out var configPtr);
+        uint count = 0;
+        var configPtr = IntPtr.Zero;
+        var result = NetworkIsolationGetAppContainerConfig(ref count, ref configPtr);
         if (result != ErrorSuccess)
         {
             throw CreateWin32Exception(result, nameof(NetworkIsolationGetAppContainerConfig));
@@ -116,7 +348,7 @@ internal sealed partial class LoopbackService : ILoopbackService
                 return set;
             }
 
-            throw new InvalidOperationException(
+            throw new InvalidDataException(
                 "NetworkIsolationGetAppContainerConfig returned entries without a configuration buffer.");
         }
 
@@ -205,7 +437,7 @@ internal sealed partial class LoopbackService : ILoopbackService
     {
         if (sid == IntPtr.Zero)
         {
-            throw new InvalidOperationException($"NetworkIsolation returned a null SID for {source}.");
+            throw new InvalidDataException($"NetworkIsolation returned a null SID for {source}.");
         }
 
         if (!ConvertSidToStringSidW(sid, out var stringSid))
@@ -217,13 +449,13 @@ internal sealed partial class LoopbackService : ILoopbackService
         }
         if (stringSid == IntPtr.Zero)
         {
-            throw new InvalidOperationException($"ConvertSidToStringSidW returned no value for {source}.");
+            throw new InvalidDataException($"ConvertSidToStringSidW returned no value for {source}.");
         }
 
         try
         {
             return Marshal.PtrToStringUni(stringSid)
-                ?? throw new InvalidOperationException($"ConvertSidToStringSidW returned invalid text for {source}.");
+                ?? throw new InvalidDataException($"ConvertSidToStringSidW returned invalid text for {source}.");
         }
         finally
         {
@@ -295,13 +527,18 @@ internal sealed partial class LoopbackService : ILoopbackService
     }
 
     [LibraryImport("FirewallAPI.dll")]
-    private static partial uint NetworkIsolationEnumAppContainers(uint flags, out uint count, out IntPtr appContainers);
+    private static partial uint NetworkIsolationEnumAppContainers(uint flags, ref uint count, ref IntPtr appContainers);
 
     [LibraryImport("FirewallAPI.dll")]
-    private static partial uint NetworkIsolationGetAppContainerConfig(out uint count, out IntPtr appContainerSids);
+    private static partial uint NetworkIsolationGetAppContainerConfig(ref uint count, ref IntPtr appContainerSids);
 
     [LibraryImport("FirewallAPI.dll")]
     private static partial uint NetworkIsolationSetAppContainerConfig(uint count, [In] SID_AND_ATTRIBUTES[] appContainerSids);
+
+    [LibraryImport("userenv.dll", StringMarshalling = StringMarshalling.Utf16)]
+    private static partial int DeriveAppContainerSidFromAppContainerName(
+        string appContainerName,
+        ref IntPtr appContainerSid);
 
     [LibraryImport("FirewallAPI.dll")]
     private static partial void NetworkIsolationFreeAppContainers(IntPtr appContainers);
@@ -322,6 +559,9 @@ internal sealed partial class LoopbackService : ILoopbackService
 
     [LibraryImport("kernel32.dll")]
     private static partial IntPtr GetProcessHeap();
+
+    [LibraryImport("advapi32.dll")]
+    private static partial IntPtr FreeSid(IntPtr sid);
 
     [LibraryImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
