@@ -39,7 +39,6 @@ Please check that your PR meets the following requirements: <!-- remove those th
 - [ ] New components
   - [ ] The documentation for the new component has been prepared, the documentation link: [link]()
   - [ ] For controls, the controls have been placed in the `Controls` folder of the main project
-- [ ] File headers have been added to all source files
 - [ ] **NOT** Contains breaking updates
 
 <!-- If this PR contains a breaking update, please describe below the impact on existing applications and how to adapt to the new changes -->

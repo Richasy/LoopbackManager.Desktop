@@ -17,7 +17,7 @@
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
-.sprout-runner/
+.sprout-devtools/
 bld/
 [Bb]in/
 [Oo]bj/
@@ -59,8 +59,8 @@ project.fragment.lock.json
 artifacts/
 **/Properties/launchSettings.json
 
-# StyleCop
-StyleCopReport.xml
+# Local Partner Center association used for Store release packaging
+Package.StoreAssociation.xml
 
 # Files built by Visual Studio
 *_i.c
@@ -200,13 +200,6 @@ csx/
 # Microsoft Azure Emulator
 ecf/
 rcf/
-
-# Windows Store app package directories and files
-AppPackages/
-BundleArtifacts/
-Package.StoreAssociation.xml
-_pkginfo.txt
-*.appx
 
 # Visual Studio cache files
 # files ending in .cache can be ignored

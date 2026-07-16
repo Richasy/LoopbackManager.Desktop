@@ -9,12 +9,14 @@ namespace LoopbackManager.Shell;
 /// </summary>
 public sealed class App : Application
 {
+    private const string WindowPlacementSetting = "WindowPlacement";
+
     private Window _window = null!;
 
     /// <inheritdoc/>
     protected override void OnLaunched(LaunchEventArgs e)
     {
-        var lastPlacement = SettingsToolkit.ReadLocalSetting(Models.Constants.SettingNames.WindowPlacement, string.Empty);
+        var lastPlacement = SettingsToolkit.ReadLocalSetting(WindowPlacementSetting, string.Empty);
         _window = OpenWindow(new WindowSpec
         {
             Title = Resources.AppName,
@@ -39,7 +41,7 @@ public sealed class App : Application
     }
 
     private void OnClosing(object? sender, WindowClosingEventArgs e)
-        => SettingsToolkit.WriteLocalSetting(Models.Constants.SettingNames.WindowPlacement, _window.SavePlacement().Serialize());
+        => SettingsToolkit.WriteLocalSetting(WindowPlacementSetting, _window.SavePlacement().Serialize());
 
     private void SyncBackground() => _window.Background = _window.Theme.Colors.SolidBackgroundFillColorBase;
 }

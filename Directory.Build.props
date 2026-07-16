@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project>
-  <!-- The repository is being rewritten on the Sprout UI framework (net10). The legacy WinUI-era StyleCop ruleset +
-       TreatWarningsAsErrors enforcement was removed so the whole repo builds uniformly against Sprout's own analyzers,
-       instead of the old ruleset fighting the Sprout template/source style. -->
-</Project>

@@ -1,6 +1,0 @@
-[submodule "custom"]
-	path = custom
-	url = custom_module_url
-[submodule "src/WinUI.Share"]
-	path = src/WinUI.Share
-	url = https://github.com/Richasy/WinUI.Share

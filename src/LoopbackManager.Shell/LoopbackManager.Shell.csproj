@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <!-- A -windows TFM turns on the WinRT projection of the OS, so this Sprout app can also call Windows platform APIs
-         (and the Windows App SDK below). Sprout itself is plain net11.0 and is consumed as a package, so it works
+         (and the Windows App SDK below). Sprout itself is plain net10.0 and is consumed as a package, so it works
          unchanged from here. 10.0.19041.0 is Sprout's minimum Windows version. -->
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -68,10 +68,6 @@
     <!-- Opt-in MSIX packaging: `dotnet publish -r win-x64` then also produces a signed .msix (the self-contained
          WinAppSDK runtime is bundled inside it). No Windows App SDK MSIX tooling — the same Sprout packer is used. -->
     <PackageReference Include="Sprout.Packaging" Version="0.1.0-preview.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\LoopbackManager.Models\LoopbackManager.Models.csproj" />
   </ItemGroup>
 
 </Project>

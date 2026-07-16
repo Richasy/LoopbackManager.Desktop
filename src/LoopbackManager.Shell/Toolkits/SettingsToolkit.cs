@@ -1,20 +1,9 @@
-﻿using LoopbackManager.Models.Constants;
-using Microsoft.Windows.Storage;
+﻿using Microsoft.Windows.Storage;
 
 namespace LoopbackManager.Shell.Toolkits;
 
 internal static class SettingsToolkit
 {
-    /// <summary>
-    /// Read local setting.
-    /// </summary>
-    /// <typeparam name="T">Type of read value.</typeparam>
-    /// <param name="settingName">Setting name.</param>
-    /// <param name="defaultValue">Default value provided when the setting does not exist.</param>
-    /// <returns>Setting value obtained.</returns>
-    public static T ReadLocalSetting<T>(SettingNames settingName, T defaultValue)
-        => ReadLocalSetting(settingName.ToString(), defaultValue);
-
     /// <summary>
     /// Read local setting.
     /// </summary>
@@ -56,49 +45,13 @@ internal static class SettingsToolkit
     /// <typeparam name="T">Type of written value.</typeparam>
     /// <param name="settingName">Setting name.</param>
     /// <param name="value">Setting value.</param>
-    public static void WriteLocalSetting<T>(SettingNames settingName, T value)
-        => WriteLocalSetting(settingName.ToString(), value);
-
-    /// <summary>
-    /// Write local setting.
-    /// </summary>
-    /// <typeparam name="T">Type of written value.</typeparam>
-    /// <param name="settingName">Setting name.</param>
-    /// <param name="value">Setting value.</param>
     public static void WriteLocalSetting<T>(string settingName, T value)
     {
         var settingContainer = GetSettingContainer();
         settingContainer.Values[settingName] = value is Enum ? value.ToString() : value;
     }
 
-    /// <summary>
-    /// Delete local setting.
-    /// </summary>
-    /// <param name="settingName">Setting name.</param>
-    public static void DeleteLocalSetting(SettingNames settingName)
-    {
-        var settingContainer = GetSettingContainer();
-
-        if (IsSettingKeyExist(settingName))
-        {
-            _ = settingContainer.Values.Remove(settingName.ToString());
-        }
-    }
-
-    /// <summary>
-    /// Whether the setting to be read has been created locally.
-    /// </summary>
-    /// <param name="settingName">Setting name.</param>
-    /// <returns><c>true</c> means the local setting exists, <c>false</c> means it does not exist.</returns>
-    public static bool IsSettingKeyExist(SettingNames settingName)
-        => IsSettingKeyExist(settingName.ToString());
-
-    /// <summary>
-    /// Whether the setting to be read has been created locally.
-    /// </summary>
-    /// <param name="settingName">Setting name.</param>
-    /// <returns><c>true</c> means the local setting exists, <c>false</c> means it does not exist.</returns>
-    public static bool IsSettingKeyExist(string settingName)
+    private static bool IsSettingKeyExist(string settingName)
         => GetSettingContainer().Values.ContainsKey(settingName);
 
     private static ApplicationDataContainer GetSettingContainer()
