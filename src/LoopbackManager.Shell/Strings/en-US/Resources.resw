@@ -15,6 +15,30 @@
   <data name="LoadFailed" xml:space="preserve">
     <value>Failed to load apps</value>
   </data>
+  <data name="LoadErrorAccessDeniedHelp" xml:space="preserve">
+    <value>Windows denied access to the network-isolation configuration. Use an administrator account and check whether security software or organizational policy is blocking the Windows Firewall API, then retry.</value>
+  </data>
+  <data name="LoadErrorDetails" xml:space="preserve">
+    <value>Error details</value>
+  </data>
+  <data name="LoadErrorFirewallServiceHelp" xml:space="preserve">
+    <value>The Windows Firewall service is unavailable. In Services, make sure Base Filtering Engine and Windows Defender Firewall are running. If security software or organizational policy disabled them, restore those settings and retry.</value>
+  </data>
+  <data name="LoadErrorInvalidConfigurationHelp" xml:space="preserve">
+    <value>Windows returned invalid AppContainer or SID configuration data. Restart Windows and install system updates. If it still fails, repair Windows components with DISM and SFC.</value>
+  </data>
+  <data name="LoadErrorMissingComponentHelp" xml:space="preserve">
+    <value>A required Windows network-isolation component is missing or incompatible. Install system updates, then run “DISM /Online /Cleanup-Image /RestoreHealth” and “sfc /scannow” as administrator and restart Windows.</value>
+  </data>
+  <data name="LoadErrorResourceExhaustedHelp" xml:space="preserve">
+    <value>Windows did not have enough memory to read the app list. Close some apps or restart Windows, then retry.</value>
+  </data>
+  <data name="LoadErrorUnknownHelp" xml:space="preserve">
+    <value>Retry first. If it still fails, restart Windows and make sure Base Filtering Engine and Windows Defender Firewall are running. Include the error details below when reporting the problem.</value>
+  </data>
+  <data name="LoadErrorUnsupportedSystemHelp" xml:space="preserve">
+    <value>This Windows environment does not support the network-isolation API. Install system updates; on a customized or stripped-down Windows installation, restore the Windows Firewall components.</value>
+  </data>
   <data name="Loading" xml:space="preserve">
     <value>Loading…</value>
   </data>

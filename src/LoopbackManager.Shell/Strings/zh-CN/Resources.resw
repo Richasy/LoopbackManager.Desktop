@@ -126,6 +126,30 @@
   <data name="LoadFailed" xml:space="preserve">
     <value>加载失败</value>
   </data>
+  <data name="LoadErrorAccessDeniedHelp" xml:space="preserve">
+    <value>系统拒绝访问网络隔离配置。请使用管理员账户，并检查安全软件或组织策略是否阻止 Windows 防火墙 API，然后重试。</value>
+  </data>
+  <data name="LoadErrorDetails" xml:space="preserve">
+    <value>错误详情</value>
+  </data>
+  <data name="LoadErrorFirewallServiceHelp" xml:space="preserve">
+    <value>Windows 防火墙服务不可用。请在“服务”中确认“Base Filtering Engine”和“Windows Defender 防火墙”已启动；若被安全软件或组织策略禁用，请先恢复相关设置再重试。</value>
+  </data>
+  <data name="LoadErrorInvalidConfigurationHelp" xml:space="preserve">
+    <value>Windows 返回了无效的 AppContainer 或 SID 配置。请重启 Windows 并安装系统更新；若仍失败，请使用 DISM 和 SFC 修复系统组件。</value>
+  </data>
+  <data name="LoadErrorMissingComponentHelp" xml:space="preserve">
+    <value>所需的 Windows 网络隔离组件缺失或不兼容。请安装系统更新，然后以管理员身份运行“DISM /Online /Cleanup-Image /RestoreHealth”和“sfc /scannow”，完成后重启 Windows。</value>
+  </data>
+  <data name="LoadErrorResourceExhaustedHelp" xml:space="preserve">
+    <value>Windows 没有足够的内存读取应用列表。请关闭部分应用或重启 Windows，然后重试。</value>
+  </data>
+  <data name="LoadErrorUnknownHelp" xml:space="preserve">
+    <value>请先重试；若仍失败，请重启 Windows，并确认“Base Filtering Engine”和“Windows Defender 防火墙”服务正常。反馈问题时请附上下方错误详情。</value>
+  </data>
+  <data name="LoadErrorUnsupportedSystemHelp" xml:space="preserve">
+    <value>当前 Windows 环境不支持网络隔离接口。请安装系统更新；若使用精简版系统，请恢复 Windows 防火墙组件。</value>
+  </data>
   <data name="Loading" xml:space="preserve">
     <value>正在加载…</value>
   </data>

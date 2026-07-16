@@ -1,10 +1,78 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.ComponentModel;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LoopbackManager.Shell.Tests;
 
 [TestClass]
 public sealed class AppStoreTests
 {
+    [TestMethod]
+    public async Task LoadFailure_PreservesUnderlyingError_AndCanRetryAsync()
+    {
+        var expected = new InvalidOperationException("read failed");
+        var service = new FakeLoopbackService { LoadException = expected };
+        using var store = new AppStore(service);
+
+        await store.ReloadAsync();
+
+        Assert.IsTrue(store.Apps.IsError);
+        Assert.AreSame(expected, store.Apps.Error);
+        Assert.AreEqual(AppLoadFailureKind.Unknown, store.LoadFailure.Kind);
+        StringAssert.Contains(store.LoadFailure.Details, "read failed");
+
+        service.LoadException = null;
+        await store.ReloadAsync();
+
+        AssertSingleApp(store);
+        Assert.AreEqual(AppLoadFailureKind.None, store.LoadFailure.Kind);
+        Assert.AreEqual(2, service.LoadCalls);
+    }
+
+    [DataTestMethod]
+    [DataRow(5, AppLoadFailureKind.AccessDenied)]
+    [DataRow(87, AppLoadFailureKind.UnsupportedSystem)]
+    [DataRow(126, AppLoadFailureKind.MissingSystemComponent)]
+    [DataRow(1058, AppLoadFailureKind.FirewallServiceUnavailable)]
+    [DataRow(1062, AppLoadFailureKind.FirewallServiceUnavailable)]
+    [DataRow(1722, AppLoadFailureKind.FirewallServiceUnavailable)]
+    public async Task LoadFailure_ClassifiesKnownWin32ErrorsAsync(
+        int nativeError,
+        AppLoadFailureKind expectedKind)
+    {
+        var service = new FakeLoopbackService
+        {
+            LoadException = new Win32Exception(nativeError),
+        };
+        using var store = new AppStore(service);
+
+        await store.ReloadAsync();
+
+        Assert.AreEqual(expectedKind, store.LoadFailure.Kind);
+        StringAssert.Contains(store.LoadFailure.Details, $"0x{nativeError:X8}");
+    }
+
+    [TestMethod]
+    public async Task LoadFailure_ClassifiesManagedFailuresAsync()
+    {
+        var cases = new (Exception Error, AppLoadFailureKind Kind)[]
+        {
+            (new UnauthorizedAccessException(), AppLoadFailureKind.AccessDenied),
+            (new DllNotFoundException("FirewallAPI.dll"), AppLoadFailureKind.MissingSystemComponent),
+            (new PlatformNotSupportedException(), AppLoadFailureKind.UnsupportedSystem),
+            (new InvalidDataException(), AppLoadFailureKind.InvalidSystemConfiguration),
+            (new OutOfMemoryException(), AppLoadFailureKind.ResourceExhausted),
+        };
+        var service = new FakeLoopbackService();
+        using var store = new AppStore(service);
+
+        foreach (var (error, kind) in cases)
+        {
+            service.LoadException = error;
+            await store.ReloadAsync();
+            Assert.AreEqual(kind, store.LoadFailure.Kind, error.GetType().Name);
+        }
+    }
+
     [TestMethod]
     public async Task SaveFailure_KeepsChangesPending_AndCanRetryAsync()
     {
@@ -145,6 +213,8 @@ public sealed class AppStoreTests
 
         public bool BlockSave { get; init; }
 
+        public Exception? LoadException { get; set; }
+
         public Exception? SaveException { get; set; }
 
         public IReadOnlyList<AppContainerInfo> AppSnapshots { get; init; } =
@@ -160,6 +230,11 @@ public sealed class AppStoreTests
         public Task<IReadOnlyList<AppContainerInfo>> GetAppsAsync(CancellationToken cancellationToken)
         {
             LoadCalls++;
+            if (LoadException is not null)
+            {
+                return Task.FromException<IReadOnlyList<AppContainerInfo>>(LoadException);
+            }
+
             return Task.FromResult(AppSnapshots);
         }
 

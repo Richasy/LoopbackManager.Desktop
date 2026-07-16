@@ -24,7 +24,7 @@ namespace LoopbackManager.Shell;
 /// </remarks>
 internal sealed partial class LoopbackService : ILoopbackService
 {
-    private const uint NetisoFlagMax = 0x2;
+    private const uint NetisoFlagsNone = 0;
     private const uint ErrorSuccess = 0;
 
     /// <inheritdoc/>
@@ -40,10 +40,11 @@ internal sealed partial class LoopbackService : ILoopbackService
         // The SIDs that currently have a loopback exemption — a set the enumeration below tests each app against.
         var exempt = GetExemptSids();
 
-        var enumResult = NetworkIsolationEnumAppContainers(NetisoFlagMax, out var count, out var appsPtr);
+        // NETISO_FLAG_MAX is the enum sentinel, not a usable flag. We do not consume binary metadata, so pass no flags.
+        var enumResult = NetworkIsolationEnumAppContainers(NetisoFlagsNone, out var count, out var appsPtr);
         if (enumResult != ErrorSuccess)
         {
-            throw new InvalidOperationException($"NetworkIsolationEnumAppContainers failed (0x{enumResult:X8}).");
+            throw CreateWin32Exception(enumResult, nameof(NetworkIsolationEnumAppContainers));
         }
 
         if (appsPtr == IntPtr.Zero || count == 0)
@@ -105,9 +106,7 @@ internal sealed partial class LoopbackService : ILoopbackService
         var result = NetworkIsolationGetAppContainerConfig(out var count, out var configPtr);
         if (result != ErrorSuccess)
         {
-            throw new Win32Exception(
-                unchecked((int)result),
-                $"NetworkIsolationGetAppContainerConfig failed (0x{result:X8}).");
+            throw CreateWin32Exception(result, nameof(NetworkIsolationGetAppContainerConfig));
         }
 
         if (configPtr == IntPtr.Zero)
@@ -181,9 +180,7 @@ internal sealed partial class LoopbackService : ILoopbackService
             var result = NetworkIsolationSetAppContainerConfig((uint)array.Length, array);
             if (result != ErrorSuccess)
             {
-                throw new Win32Exception(
-                    unchecked((int)result),
-                    $"NetworkIsolationSetAppContainerConfig failed (0x{result:X8}).");
+                throw CreateWin32Exception(result, nameof(NetworkIsolationSetAppContainerConfig));
             }
 
             var persisted = GetExemptSids();
@@ -214,9 +211,9 @@ internal sealed partial class LoopbackService : ILoopbackService
         if (!ConvertSidToStringSidW(sid, out var stringSid))
         {
             var error = Marshal.GetLastPInvokeError();
-            throw new Win32Exception(
-                error,
-                $"ConvertSidToStringSidW failed for {source} (0x{error:X8}).");
+            throw CreateWin32Exception(
+                unchecked((uint)error),
+                $"{nameof(ConvertSidToStringSidW)} for {source}");
         }
         if (stringSid == IntPtr.Zero)
         {
@@ -232,6 +229,13 @@ internal sealed partial class LoopbackService : ILoopbackService
         {
             _ = LocalFree(stringSid);
         }
+    }
+
+    private static Win32Exception CreateWin32Exception(uint error, string operation)
+    {
+        var nativeError = unchecked((int)error);
+        var systemMessage = new Win32Exception(nativeError).Message;
+        return new Win32Exception(nativeError, $"{operation} failed: {systemMessage} (0x{error:X8}).");
     }
 
     // NetworkIsolationGetAppContainerConfig allocates each SID and the outer array from the process heap.

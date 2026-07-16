@@ -15,6 +15,30 @@
   <data name="LoadFailed" xml:space="preserve">
     <value>載入應用程式失敗</value>
   </data>
+  <data name="LoadErrorAccessDeniedHelp" xml:space="preserve">
+    <value>系統拒絕存取網路隔離設定。請使用系統管理員帳戶，並檢查安全性軟體或組織原則是否封鎖 Windows 防火牆 API，然後重試。</value>
+  </data>
+  <data name="LoadErrorDetails" xml:space="preserve">
+    <value>錯誤詳細資料</value>
+  </data>
+  <data name="LoadErrorFirewallServiceHelp" xml:space="preserve">
+    <value>Windows 防火牆服務無法使用。請在「服務」中確認「Base Filtering Engine」與「Windows Defender 防火牆」已啟動；若遭安全性軟體或組織原則停用，請先還原相關設定再重試。</value>
+  </data>
+  <data name="LoadErrorInvalidConfigurationHelp" xml:space="preserve">
+    <value>Windows 傳回了無效的 AppContainer 或 SID 設定。請重新啟動 Windows 並安裝系統更新；若仍失敗，請使用 DISM 與 SFC 修復系統元件。</value>
+  </data>
+  <data name="LoadErrorMissingComponentHelp" xml:space="preserve">
+    <value>所需的 Windows 網路隔離元件遺失或不相容。請安裝系統更新，然後以系統管理員身分執行「DISM /Online /Cleanup-Image /RestoreHealth」與「sfc /scannow」，完成後重新啟動 Windows。</value>
+  </data>
+  <data name="LoadErrorResourceExhaustedHelp" xml:space="preserve">
+    <value>Windows 沒有足夠的記憶體讀取應用程式清單。請關閉部分應用程式或重新啟動 Windows，然後重試。</value>
+  </data>
+  <data name="LoadErrorUnknownHelp" xml:space="preserve">
+    <value>請先重試；若仍失敗，請重新啟動 Windows，並確認「Base Filtering Engine」與「Windows Defender 防火牆」服務正常。回報問題時請附上下方錯誤詳細資料。</value>
+  </data>
+  <data name="LoadErrorUnsupportedSystemHelp" xml:space="preserve">
+    <value>目前的 Windows 環境不支援網路隔離介面。請安裝系統更新；若使用精簡版系統，請還原 Windows 防火牆元件。</value>
+  </data>
   <data name="Loading" xml:space="preserve">
     <value>正在載入…</value>
   </data>

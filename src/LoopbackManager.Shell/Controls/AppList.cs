@@ -3,6 +3,7 @@ using Sprout.Controls;
 using Sprout.Graphics;
 using Sprout.Layout;
 using Sprout.Reconcile;
+using Sprout.Styling;
 using Sprout.Theming;
 using Sprout.Widgets;
 
@@ -69,10 +70,35 @@ public sealed partial class AppList : Control
             .Visible(ShowLoading),
         Stack(
             Text(Resources.LoadFailed)
+                .Style(TextStyles.BodyStrong)
+                .Align(TextAlignment.Center)
+                .HAlign(HorizontalAlignment.Center),
+            Text(LoadFailureGuidance)
                 .Foreground(Theme.Resolve().Colors.TextFillColorSecondary)
+                .Wrap()
+                .Align(TextAlignment.Center)
+                .Width(480f)
+                .HAlign(HorizontalAlignment.Center),
+            Border(
+                Text(LoadFailureDetails)
+                    .Foreground(Theme.Resolve().Colors.TextFillColorSecondary)
+                    .Style(TextStyles.Caption)
+                    .Wrap()
+                    .Align(TextAlignment.Leading))
+                .Background(Brush.Theme(ThemeColorToken.CardBackgroundFillColorDefault))
+                .BorderBrush(Brush.Theme(ThemeColorToken.CardStrokeColorDefault))
+                .BorderThickness(1f)
+                .CornerRadius(6f)
+                .Padding(12f, 8f)
+                .Width(480f)
                 .HAlign(HorizontalAlignment.Center),
             HyperlinkButton(Resources.Retry, HyperlinkButtonPalette.FromTheme(Theme.Resolve().Colors))
                 .OnClick(OnRetry)
+                .Automation(new()
+                {
+                    Name = Resources.Retry,
+                    AutomationId = "RetryLoadButton",
+                })
                 .HAlign(HorizontalAlignment.Center))
             .Spacing(8f)
             .HAlign(HorizontalAlignment.Center)
@@ -83,6 +109,20 @@ public sealed partial class AppList : Control
             .HAlign(HorizontalAlignment.Center)
             .VAlign(VerticalAlignment.Center)
             .Visible(ShowEmpty));
+
+    private string LoadFailureGuidance => _store.LoadFailure.Kind switch
+    {
+        AppLoadFailureKind.FirewallServiceUnavailable => Resources.LoadErrorFirewallServiceHelp,
+        AppLoadFailureKind.AccessDenied => Resources.LoadErrorAccessDeniedHelp,
+        AppLoadFailureKind.UnsupportedSystem => Resources.LoadErrorUnsupportedSystemHelp,
+        AppLoadFailureKind.MissingSystemComponent => Resources.LoadErrorMissingComponentHelp,
+        AppLoadFailureKind.InvalidSystemConfiguration => Resources.LoadErrorInvalidConfigurationHelp,
+        AppLoadFailureKind.ResourceExhausted => Resources.LoadErrorResourceExhaustedHelp,
+        _ => Resources.LoadErrorUnknownHelp,
+    };
+
+    private string LoadFailureDetails
+        => $"{Resources.LoadErrorDetails}: {_store.LoadFailure.Details}";
 
     private void OnRetry() => _ = _store.ReloadAsync();
 }

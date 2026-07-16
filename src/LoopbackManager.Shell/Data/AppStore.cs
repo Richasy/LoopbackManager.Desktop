@@ -41,6 +41,9 @@ public sealed partial class AppStore
     /// <summary>The loaded app rows — Idle → Loading → Success(rows) / Error. Render with the four phases.</summary>
     public AsyncValue<IReadOnlyList<AppItemStore>> Apps => _load.State;
 
+    /// <summary>The current load error classified for actionable UI guidance, or <see cref="AppLoadFailureKind.None"/>.</summary>
+    public AppLoadFailure LoadFailure => AppLoadFailure.From(Apps.Error);
+
     /// <summary>The last save's result — Idle until saved, then Loading → Success(true) / Error.</summary>
     public AsyncValue<bool> SaveResult => _save.State;
 
