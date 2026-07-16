@@ -16,25 +16,39 @@ Local Network Loopback Manager for Windows 11
 
 ---
 
-`Loopback Manager` is a small tool to manage the local network loopback of all applications on the current device
+`Loopback Manager` is a small utility for managing local-network loopback exemptions for applications on the current
+device.
+
+> [!IMPORTANT]
+> The current version is an experimental rewrite built with the self-owned native UI framework
+> [Sprout](https://github.com/Richasy/Sprout). It **does not use WinUI**. Sprout is evolving quickly, so UI behavior,
+> interaction details, and compatibility may continue to change. The previous WinUI implementation remains available
+> on the [`legacy`](https://github.com/Richasy/LoopbackManager.Desktop/tree/legacy) branch.
 
 ## ❓What's this?
 
 You may be unfamiliar with the local network loopback, but you may be more familiar with `127.0.0.1` or `localhost`, which is the local loopback address.
 
-For many users, setting up a network proxy is a very common operation, and you may not even realize it yourself. Most of the proxies are local proxies, but in many cases, even if you use proxies in the system, some applications still cannot connect to the network. This is because these applications do not enable the local network loopback function.
+Many network proxies listen on a local port. Some applications may still fail to connect even when a system proxy is
+configured because they have not been granted a local-network loopback exemption.
 
 **Especially for UWP applications, the default is to turn off network loopback**。
 
-This tool is used to handle this matter, open it, check all the applications you want to enable the local network loopback, click **Save**, these applications can go to the local proxy, the operation is very convenient.
+Open this tool, select the applications that need local-network loopback, and click **Save**. Those applications can
+then access locally hosted proxy services.
 
 ## 🔆 Special note
 
-Project core code reference [Windows-Loopback-Exemption-Manager](https://github.com/tiagonmas/Windows-Loopback-Exemption-Manager), You can think of this project as a Windows 11 version of `Windows-Loopback-Exemption-Manager` (although the Package is 'a little bigger').
+The core loopback logic references
+[Windows-Loopback-Exemption-Manager](https://github.com/tiagonmas/Windows-Loopback-Exemption-Manager).
+
+The current UI is self-drawn by Sprout and presented through Direct2D/DirectComposition. The repository's `main`
+branch contains no WinUI application project. Windows App SDK is used only for non-UI platform capabilities and
+packaging support.
 
 ## 🙌 Easy start
 
-> **Store Version** and **Sideload Version** can coexist
+> The **Store version** and **sideload version** use different identities and can coexist.
 
 ### Install from Microsoft Store
 
@@ -44,15 +58,20 @@ The store version only supports Windows 11 and above.
 
 ### Sideload
 
-If you want to install the network loopback manager locally, please open the [Release](https://github.com/Richasy/LoopbackManager.Desktop/releases) on the right, Find the latest version and select the installation package for the current system to download。
+Download and extract the latest `.7z` archive from
+[Releases](https://github.com/Richasy/LoopbackManager.Desktop/releases). It contains:
 
-Then open [System Settings](ms-settings:developers)，Turn on `Developer mode` and wait for the system to install some necessary extensions.
+- `LoopbackManager.Shell.cer`: the development signing certificate;
+- `LoopbackManager.Shell_<version>_x64_arm64.msixbundle`: one installer containing both x64 and ARM64 packages.
 
-After the application package is downloaded, unzip the package, and in administrator mode, use **Windows PowerShell** *(not PowerShell Core)* to run the unzipped `install.ps1` script, and follow the prompts to install.
+Before the first install, import the `.cer` into the local machine's **Trusted People** and **Trusted Root
+Certification Authorities** stores, then open the `.msixbundle`. This certificate is only for the experimental
+sideload build; Microsoft Store builds are signed by the Store and require no manual certificate installation.
 
 ## 🎖️ Thanks
 
 - [Windows-Loopback-Exemption-Manager](https://github.com/tiagonmas/Windows-Loopback-Exemption-Manager)
+- [Sprout](https://github.com/Richasy/Sprout)
 - [Windows App SDK](https://github.com/microsoft/WindowsAppSDK)
 
 ## 🧩 Screenshot

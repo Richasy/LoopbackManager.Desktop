@@ -16,25 +16,34 @@ Windows 11 的本地网络回环管理器
 
 ---
 
-`网络回环管理器` 是一个管理当前设备上所有应用的本地网络回环的小工具
+`网络回环管理器` 是一个管理当前设备上所有应用本地网络回环权限的小工具。
+
+> [!IMPORTANT]
+> 当前版本是基于自有原生 UI 框架 [Sprout](https://github.com/Richasy/Sprout) 重写的实验版本，**不使用
+> WinUI**。Sprout 仍处于快速迭代阶段，因此界面、交互和兼容性可能继续调整。此前的 WinUI 实现保留在
+> [`legacy`](https://github.com/Richasy/LoopbackManager.Desktop/tree/legacy) 分支。
 
 ## ❓这是干什么的？
 
 说本地网络回环你可能有些陌生，但是谈到 `127.0.0.1`，或者 `localhost` 你也许会更熟悉，这个就是本地回环地址。
 
-对于很多用户（特别是中国大陆用户），翻墙设置网络代理是一种很常见的操作，甚至你自己可能都没意识到。而大多数代理就是走的本地代理，但是很多时候即便你在系统中使用了代理，部分应用依然无法翻墙甚至干脆无法连接网络，这就是这些应用没有启用本地网络回环功能。
+对于很多用户，设置网络代理是一种很常见的操作。大多数代理会在本机监听端口，但部分应用即使启用了系统代理也可能无法连接，因为这些应用没有启用本地网络回环。
 
 **特别是 UWP 应用，默认就是关闭网络回环的**。
 
-这个工具就是用来处理这个事情的，打开它，勾选上所有你要启用本地网络回环的应用，点击保存，这些应用就都可以走本地代理了，操作非常方便。
+打开本工具，勾选需要启用本地网络回环的应用并点击 **保存**，这些应用即可访问本机代理服务。
 
 ## 🔆 特别说明
 
-项目核心代码参考 [Windows-Loopback-Exemption-Manager](https://github.com/tiagonmas/Windows-Loopback-Exemption-Manager)，你可以将本项目视作 `Windows-Loopback-Exemption-Manager` 的 Windows 11 版本（虽然 Package 大了亿点点）。
+项目核心逻辑参考
+[Windows-Loopback-Exemption-Manager](https://github.com/tiagonmas/Windows-Loopback-Exemption-Manager)。
+
+当前应用界面由 Sprout 自绘并通过 Direct2D/DirectComposition 呈现；仓库的 `main` 分支不包含 WinUI
+应用项目。Windows App SDK 仅用于非 UI 的平台能力与打包支持。
 
 ## 🙌 简单的开始
 
-> **商店版本** 和 **侧加载版本** 可以共存
+> **商店版本** 和 **侧加载版本** 使用不同身份，可以共存。
 
 ### 从商店安装
 
@@ -44,15 +53,18 @@ Windows 11 的本地网络回环管理器
 
 ### 侧加载 (Sideload)
 
-如果你想本地安装网络回环管理器，请打开右侧的 [Release](https://github.com/Richasy/LoopbackManager.Desktop/releases) 页面，找到最新版本，并选择适用于当前系统的安装包下载。
+从 [Releases](https://github.com/Richasy/LoopbackManager.Desktop/releases) 下载最新的 `.7z` 文件并解压，其中包含：
 
-然后打开 [系统设置](ms-settings:developers)，打开 `开发者模式` ，并等待系统安装一些必要的扩展项。
+- `LoopbackManager.Shell.cer`：开发签名证书；
+- `LoopbackManager.Shell_<version>_x64_arm64.msixbundle`：同时包含 x64 与 ARM64 的安装包。
 
-在应用压缩包下载完成后，解压压缩包，并在管理员模式下，使用 **Windows PowerShell** *(不是PowerShell Core)* 运行解压后的 `install.ps1` 脚本，根据提示进行安装。
+首次安装时，先将 `.cer` 导入本地计算机的 **受信任人** 与 **受信任的根证书颁发机构**，再双击
+`.msixbundle` 安装。该证书仅用于实验版侧载；Microsoft Store 版本由商店签名，无需手动安装证书。
 
 ## 🎖️ 鸣谢
 
 - [Windows-Loopback-Exemption-Manager](https://github.com/tiagonmas/Windows-Loopback-Exemption-Manager)
+- [Sprout](https://github.com/Richasy/Sprout)
 - [Windows App SDK](https://github.com/microsoft/WindowsAppSDK)
 
 ## 🧩 截图
