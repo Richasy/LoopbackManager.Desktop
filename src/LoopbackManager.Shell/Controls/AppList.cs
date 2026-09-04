@@ -16,8 +16,8 @@ namespace LoopbackManager.Shell.Controls;
 /// and overlays the phase views — a virtualized <c>ItemsRepeater</c> of <see cref="AppCard"/> rows when the load
 /// succeeded with results, a centered spinner while loading, a retryable error, and an empty-state message — each shown
 /// by <c>.Visible</c> off the store's reactive phase flags, so a load settling or a filter change re-renders the right
-/// one. The phases are mutually exclusive, so exactly one overlay child is visible at a time; the <c>ItemsRepeater</c>
-/// stays mounted across phases (collapsed, then reconciled in place) rather than torn down and rebuilt. Because
+/// one. The <c>ScrollView</c> always participates in layout, including while its repeater is empty, so its native input
+/// host is established once instead of joining the composition tree only when loading finishes. Because
 /// <see cref="AppCard"/> is a <c>Control</c> (a live checkbox + open-folder button per row), it goes in through the
 /// two-closure <c>ItemsRepeater</c> overload; only a screenful is realized.
 /// </summary>
@@ -26,9 +26,6 @@ public sealed partial class AppList : Control
     private readonly AppStore _store;
 
     public AppList() => _store = Application.Current.Services.GetRequiredService<AppStore>();
-
-    // Success with at least one (filtered) row → show the list.
-    private bool ShowList => _store.Apps.IsSuccess && _store.FilteredApps.Count > 0;
 
     // Success but no (filtered) rows → show the empty state (covers both "no apps" and "no search match").
     private bool ShowEmpty => _store.Apps.IsSuccess && _store.FilteredApps.Count == 0;
@@ -57,8 +54,7 @@ public sealed partial class AppList : Control
             )
             .Vertical(ScrollMode.Auto)
             .HorizontalScrollBar(ScrollBarVisibility.Hidden)
-            .Padding(12f, 0f)
-            .Visible(ShowList),
+            .Padding(12f, 0f),
         Stack(
             ProgressRing(new Size(32f, 32f)).HAlign(HorizontalAlignment.Center),
             Text(Resources.Loading)
