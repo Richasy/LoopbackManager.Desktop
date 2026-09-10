@@ -8,7 +8,7 @@
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/Richasy/LoopbackManager.Desktop)](https://github.com/Richasy/LoopbackManager.Desktop/releases) ![GitHub Release Date](https://img.shields.io/github/release-date/Richasy/LoopbackManager.Desktop) ![GitHub All Releases](https://img.shields.io/github/downloads/Richasy/LoopbackManager.Desktop/total) ![GitHub stars](https://img.shields.io/github/stars/Richasy/LoopbackManager.Desktop?style=flat) ![GitHub forks](https://img.shields.io/github/forks/Richasy/LoopbackManager.Desktop)
 
-Windows 11 的本地网络回环管理器
+Windows 10 / Windows 11 的本地网络回环管理器
 
 [English](README_EN.md)
 
@@ -49,7 +49,7 @@ Windows 11 的本地网络回环管理器
 
 将链接 `ms-windows-store://pdp/?productid=9NTJ6CX698CL` 复制到浏览器地址栏打开，从 Microsoft Store 获取。获取后会永久保留在你的 Microsoft 账户下，可以通过 Store 进行下载加速与静默更新。
 
-商店版本仅支持 Windows 11 及以上的系统。
+最低系统要求为 Windows 10 2004（Build 19041），同时支持 Windows 11。
 
 ### 侧加载 (Sideload)
 

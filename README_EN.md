@@ -8,7 +8,7 @@
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/Richasy/LoopbackManager.Desktop)](https://github.com/Richasy/LoopbackManager.Desktop/releases) ![GitHub Release Date](https://img.shields.io/github/release-date/Richasy/LoopbackManager.Desktop) ![GitHub All Releases](https://img.shields.io/github/downloads/Richasy/LoopbackManager.Desktop/total) ![GitHub stars](https://img.shields.io/github/stars/Richasy/LoopbackManager.Desktop?style=flat) ![GitHub forks](https://img.shields.io/github/forks/Richasy/LoopbackManager.Desktop)
 
-Local Network Loopback Manager for Windows 11
+Local Network Loopback Manager for Windows 10 / Windows 11
 
 [简体中文](README.md)
 
@@ -54,7 +54,7 @@ packaging support.
 
 Copy the link `ms-windows-store://pdp/?productid=9NTJ6CX698CL` to the browser address bar to open it and get it from the Microsoft Store. After you get it, it will remain permanently under your Microsoft account, and you can download accelerated and silent updates through the Store.
 
-The store version only supports Windows 11 and above.
+Requires Windows 10 version 2004 (build 19041) or later, including Windows 11.
 
 ### Sideload
 
