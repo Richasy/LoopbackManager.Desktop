@@ -7,6 +7,106 @@ namespace LoopbackManager.Shell.Tests;
 public sealed class AppStoreTests
 {
     [TestMethod]
+    public async Task SaveWithoutSuccessfulInventory_DoesNotReplaceSystemConfigurationAsync()
+    {
+        var service = new FakeLoopbackService();
+        using var store = new AppStore(service);
+
+        Assert.IsFalse(await store.SaveAsync());
+        Assert.AreEqual(0, service.SaveCalls);
+
+        service.LoadException = new InvalidOperationException("inventory unavailable");
+        await store.ReloadAsync();
+
+        Assert.IsFalse(await store.SaveAsync());
+        Assert.AreEqual(0, service.SaveCalls);
+    }
+
+    [TestMethod]
+    public async Task FilteredApps_ReusesSnapshotAndKeepsPendingTogglesInPlaceAsync()
+    {
+        var service = new FakeLoopbackService
+        {
+            AppSnapshots =
+            [
+                new("first", "Alpha", @"C:\First", "S-1-15-2-1", "AlphaPackage", false),
+                new("second", "Beta", @"C:\Second", "S-1-15-2-2", "BetaPackage", true),
+            ],
+        };
+        using var store = new AppStore(service);
+        await store.ReloadAsync();
+        var rows = store.FilteredApps;
+
+        Assert.AreEqual("Beta", rows[0].DisplayName);
+        Assert.AreSame(rows, store.FilteredApps);
+        rows[1].Set(true);
+        Assert.AreSame(rows, store.FilteredApps, "a pending toggle must not reorder or rebuild the filtered snapshot.");
+
+        store.SetFilter("ALPHAPACKAGE");
+        Assert.AreEqual("Alpha", store.FilteredApps.Single().DisplayName);
+        store.SetFilter("bEtA");
+        Assert.AreEqual("Beta", store.FilteredApps.Single().DisplayName);
+        store.SetFilter("  ");
+        Assert.AreEqual(2, store.FilteredApps.Count);
+    }
+
+    [TestMethod]
+    public async Task SupersededLoad_CannotReplaceTheNewestInventoryAsync()
+    {
+        var first = new TaskCompletionSource<AppEnumerationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var latest = new TaskCompletionSource<AppEnumerationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var service = new FakeLoopbackService();
+        service.LoadHandler = _ => service.LoadCalls == 1 ? first.Task : latest.Task;
+        using var store = new AppStore(service);
+
+        var oldLoad = store.ReloadAsync();
+        var newLoad = store.ReloadAsync();
+        latest.SetResult(new AppEnumerationResult(
+            [new("latest", "Latest app", string.Empty, "S-1-15-2-2", "LatestPackage", false)]));
+        await newLoad;
+        first.SetResult(new AppEnumerationResult(service.AppSnapshots));
+        await oldLoad;
+
+        Assert.AreEqual("Latest app", AssertSingleApp(store).DisplayName);
+        Assert.AreEqual(2, service.LoadCalls);
+    }
+
+    [TestMethod]
+    public async Task SaveDuringReload_DoesNotWriteAStaleInventoryAsync()
+    {
+        var service = new FakeLoopbackService();
+        using var store = new AppStore(service);
+        await store.ReloadAsync();
+        AssertSingleApp(store).Set(true);
+        var pending = new TaskCompletionSource<AppEnumerationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        service.LoadHandler = _ => pending.Task;
+
+        var reload = store.ReloadAsync();
+        Assert.IsFalse(await store.SaveAsync());
+        Assert.AreEqual(0, service.SaveCalls);
+
+        pending.SetResult(new AppEnumerationResult(service.AppSnapshots));
+        await reload;
+    }
+
+    [TestMethod]
+    public async Task FailedReload_DisablesSavingThePreviousInventoryAsync()
+    {
+        var service = new FakeLoopbackService();
+        using var store = new AppStore(service);
+        await store.ReloadAsync();
+        AssertSingleApp(store).Set(true);
+        service.LoadException = new InvalidOperationException("refresh failed");
+
+        await store.ReloadAsync();
+
+        Assert.IsTrue(store.Apps.IsError);
+        Assert.IsFalse(store.CanSave, "retained data after a failed refresh must not advertise an available save.");
+        Assert.IsFalse(await store.SaveAsync());
+        Assert.AreEqual(0, service.SaveCalls);
+    }
+
+    [TestMethod]
     public async Task LoadFailure_PreservesUnderlyingError_AndCanRetryAsync()
     {
         var expected = new InvalidOperationException("read failed");
@@ -251,9 +351,13 @@ public sealed class AppStoreTests
 
         public int LoadCalls { get; private set; }
 
+        public int SaveCalls { get; private set; }
+
         public bool BlockSave { get; init; }
 
         public Exception? LoadException { get; set; }
+
+        public Func<CancellationToken, Task<AppEnumerationResult>>? LoadHandler { get; set; }
 
         public Exception? SaveException { get; set; }
 
@@ -278,6 +382,11 @@ public sealed class AppStoreTests
         public Task<AppEnumerationResult> GetAppsAsync(CancellationToken cancellationToken)
         {
             LoadCalls++;
+            if (LoadHandler is not null)
+            {
+                return LoadHandler(cancellationToken);
+            }
+
             if (LoadException is not null)
             {
                 return Task.FromException<AppEnumerationResult>(LoadException);
@@ -293,6 +402,7 @@ public sealed class AppStoreTests
             IReadOnlyList<string> exemptSids,
             CancellationToken cancellationToken)
         {
+            SaveCalls++;
             LastSavedSids = exemptSids.ToArray();
             SaveStarted.TrySetResult();
             if (BlockSave)

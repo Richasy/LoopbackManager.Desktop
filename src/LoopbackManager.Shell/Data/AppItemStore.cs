@@ -6,12 +6,8 @@ using Windows.System;
 namespace LoopbackManager.Shell;
 
 /// <summary>
-/// One app row's state — a small per-item store (the Sprout analogue of the old <c>ProgramItemViewModel</c>). It holds
-/// the immutable identity/display data plus mutable state: <see cref="IsLoopback"/> (the user's pending exemption
-/// toggle), diffed against <see cref="BaselineLoopback"/> (the last-saved / system state). Because <b>both</b> are
-/// signal-backed, <see cref="IsLoopbackChanged"/> is reactive — so the parent <see cref="AppStore"/>'s
-/// <see cref="AppStore.CanSave"/> recomputes automatically when a row toggles or commits, with no manual change
-/// notification (which the old view-model needed via <c>OnIsLoopbackChanged → CheckStatus</c>).
+/// An app's immutable identity, pending exemption, and last-saved baseline. Pending edits survive the completion
+/// of an older save; only the value actually sent to Windows becomes the new baseline.
 /// </summary>
 [Store]
 public sealed partial class AppItemStore

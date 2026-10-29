@@ -67,6 +67,7 @@ body:
      label: System version
      description: Choose a system version where you found the problem / 选择一个你发现问题的系统版本
      options:
+       - label: Windows 10 (Build 19041+)
        - label: Windows 11 21H2 (Build 22000)
        - label: Others / 其它
 - type: input

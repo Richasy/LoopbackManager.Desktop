@@ -3,11 +3,8 @@
 namespace LoopbackManager.Shell;
 
 /// <summary>
-/// The loopback list's data-response layer (the Sprout analogue of the old <c>MainPageViewModel</c>). It owns the app
-/// list as an <see cref="AsyncValue{T}"/> loaded latest-wins, a text <see cref="Filter"/>, and the whole-set save; the
-/// per-row toggle state lives in each <see cref="AppItemStore"/>. Every "can I…" flag is a reactive derived that reads
-/// the rows' signals, so toggling a row or finishing a save recomputes it with no manual notification. The loopback
-/// domain is injected as <see cref="ILoopbackService"/>, so the whole store is headless-testable with a fake.
+/// Owns inventory loading, filtering, and full-set saves. Loads are latest-wins; saves are serialized against loads
+/// and commit only the captured row values. The injected service keeps system writes outside presentation logic.
 /// </summary>
 [Store]
 public sealed partial class AppStore
@@ -47,21 +44,20 @@ public sealed partial class AppStore
     /// <summary>The last save's result — Idle until saved, then Loading → Success(true) / Error.</summary>
     public AsyncValue<bool> SaveResult => _save.State;
 
-    /// <summary>The rows matching the current <see cref="Filter"/> (by display name or package full name), sorted by display name (a stable order that does not jump when a row toggles).</summary>
-    public IReadOnlyList<AppItemStore> FilteredApps
+    // Filtering and sorting are shared by list rendering and the empty state. Pending toggles do not change order.
+    [Computed]
+    private IReadOnlyList<AppItemStore> ComputeFilteredApps()
     {
-        get
-        {
-            IReadOnlyList<AppItemStore> all = Apps.Value?.Items ?? [];
-            var filtered = string.IsNullOrWhiteSpace(Filter)
-                ? all
-                : all.Where(a => a.DisplayName.Contains(Filter, StringComparison.OrdinalIgnoreCase)
-                    || a.PackageFullName.Contains(Filter, StringComparison.OrdinalIgnoreCase));
-            return filtered
-                .OrderByDescending(a => a.BaselineLoopback)
-                .ThenBy(a => a.DisplayName, StringComparer.CurrentCultureIgnoreCase)
-                .ToList();
-        }
+        var all = Apps.Value?.Items ?? [];
+        var filter = Filter;
+        var filtered = string.IsNullOrWhiteSpace(filter)
+            ? all
+            : all.Where(a => a.DisplayName.Contains(filter, StringComparison.OrdinalIgnoreCase)
+                || a.PackageFullName.Contains(filter, StringComparison.OrdinalIgnoreCase));
+        return filtered
+            .OrderByDescending(a => a.BaselineLoopback)
+            .ThenBy(a => a.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+            .ToArray();
     }
 
     /// <summary>Whether a load succeeded but produced no apps.</summary>
@@ -82,8 +78,8 @@ public sealed partial class AppStore
     /// <summary>Whether loading succeeded in best-effort mode and the UI should disclose that some data may be absent.</summary>
     public bool ShouldShowPartialLoadWarning => Apps.IsSuccess && Apps.Value?.Diagnostics.IsPartial == true;
 
-    /// <summary>Whether any row has a pending change (enables Save / Reset).</summary>
-    public bool CanSave => Apps.Value?.Items.Any(a => a.IsLoopbackChanged) ?? false;
+    /// <summary>Whether the current successful inventory has pending changes (enables Save / Reset).</summary>
+    public bool CanSave => Apps.IsSuccess && (Apps.Value?.Items.Any(a => a.IsLoopbackChanged) ?? false);
 
     /// <summary>Whether any row is not yet exempt (enables Select-all).</summary>
     public bool CanSelectAll => Apps.Value?.Items.Any(a => !a.IsLoopback) ?? false;
@@ -125,7 +121,8 @@ public sealed partial class AppStore
     /// <returns><see langword="true"/> only when this invocation saved successfully; <see langword="false"/> when rejected or failed.</returns>
     public async Task<bool> SaveAsync()
     {
-        if (_save.IsRunning || _load.IsRunning)
+        // NetworkIsolationSetAppContainerConfig replaces the entire set. Never write without a trusted inventory.
+        if (!Apps.IsSuccess || _save.IsRunning || _load.IsRunning)
         {
             return false;
         }

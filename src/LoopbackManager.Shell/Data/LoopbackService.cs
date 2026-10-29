@@ -82,8 +82,14 @@ internal sealed partial class LoopbackService : ILoopbackService
             return false;
         }
 
-        if (appsPtr == IntPtr.Zero || count == 0)
+        if (appsPtr == IntPtr.Zero)
         {
+            if (count != 0)
+            {
+                throw new InvalidDataException(
+                    "NetworkIsolationEnumAppContainers returned entries without an AppContainer buffer.");
+            }
+
             result = CreateEnumerationResult([], exempt, AppEnumerationDiagnostics.None);
             batchFailure = null!;
             return true;

@@ -1,54 +1,37 @@
 # LoopbackManager.Shell
 
-A [Sprout](https://github.com/Richasy/Sprout) application that also targets the **Windows platform** through WinRT and
-the **Windows App SDK** (the Foundation feature area — **no WinUI**). Sprout still draws the entire UI itself; the
-Windows App SDK is there for platform capabilities (app lifecycle, resources, notifications, power, …).
+Sprout 绘制的网络回环管理器，使用 Direct2D/DirectComposition，不依赖 WinUI。
+Windows App SDK Foundation 仅提供 `Microsoft.Windows.Storage.ApplicationData` 设置存储。
 
-## Why this template
+## 开发
 
-- A `-windows` target framework turns on the WinRT projection, so you can call Windows platform APIs directly.
-- `Microsoft.WindowsAppSDK.Foundation` adds the Windows App SDK's non-UI APIs — **without** pulling in WinUI XAML.
-- **Self-contained + unpackaged**: the Windows App SDK runtime is bundled next to the `.exe`, so there is no runtime to
-  install, no bootstrapper, and no MSIX requirement. It is still "just run the `.exe`" (Sprout's model).
-- **NativeAOT**: `dotnet publish` produces one self-contained native executable.
+安装 .NET 10 SDK，并在用户级 NuGet 配置中为 `sprout` Azure 源配置读取凭据；不要把凭据写入仓库。
+仓库的 `global.json` 选择已安装的稳定 .NET 10 SDK。
 
-## Run
-
-```pwsh
-dotnet run
+```powershell
+dotnet run --project src/LoopbackManager.Shell -p:SproutRunPackaged=false
+dotnet test LoopbackManager.sln
 ```
 
-The window uses a Mica backdrop and follows the system theme. Press **Ctrl+T** to cycle System → Light → Dark. The card
-shows two live WinRT values (OS memory usage + the Windows App SDK activation kind) to prove platform access.
+Debug 使用原有 `Richasy/LoopbackManager` 的 `v1` 非打包设置容器。Release 使用包身份的设置容器；
+发布版应从 MSIX 启动。窗口跟随系统主题并记住位置。
 
-## Publish a self-contained native executable (NativeAOT)
+## 发布
 
-```pwsh
-dotnet publish -c Release -r win-x64
+```powershell
+dotnet publish src/LoopbackManager.Shell -c Release -r win-x64
 ```
 
-One self-contained `.exe` (with the bundled Windows App SDK runtime) under `bin/Release/.../win-x64/publish/`.
+需要 Windows NativeAOT C++ 工具链和 Windows SDK。发布目录包含本机可执行文件、所需非 UI
+Windows App SDK 文件、签名 MSIX 和证书。打包不执行安装，也不改变网络回环设置。
+保留 `Package.appxmanifest` 中的应用身份；签名凭据由本机环境提供。
 
-## MSIX (opt-in)
+## 代码入口
 
-Generate with `--packaging msix` (or add the `Sprout.Packaging` reference + `<SproutPackageFormat>Msix</SproutPackageFormat>`)
-to also produce a signed MSIX on publish — the **same** Sprout packer is used; no Windows App SDK MSIX tooling.
-Packaging is **publish-time only**: `dotnet build` / `dotnet run` never package (development stays unpackaged); the
-`.msix` is produced only by `dotnet publish -c Release -r win-x64`.
+- `Program.cs`：Direct2D、单实例和共享 store 注册。
+- `App.cs`：窗口、位置持久化和首次加载。
+- `AppRoot.cs` / `Controls/`：声明式界面、虚拟化应用列表与状态提示。
+- `Data/AppStore.cs`：加载、过滤、保存快照与并发规则。
+- `Data/LoopbackService.cs`：FirewallAPI / WinRT 边界、隐藏 SID 保留与写后校验。
 
-## App icon and MSIX assets
-
-`app.ico` is the application icon — embedded into the `.exe` (`<ApplicationIcon>`) for Explorer / the taskbar, and shown
-as the **window** icon automatically (no code). Replace it to re-brand. With `--packaging msix` you also have
-`Package.appxmanifest` (your editable MSIX identity + tiles + splash) and `Assets/` (a WinUI-aligned minimal icon set —
-7 logo bases + the unplated taskbar icon); leave the
-manifest's `$...$` placeholders (filled at publish, kept consistent with the dev signing certificate). The MSIX identity
-is readable by default (the project name); scaffold with `--identity-style guid` for a GUID identity + a `CN=<your user>`
-publisher (the Visual Studio convention).
-
-## Where to start
-
-- `Program.cs` — the entry point.
-- `App.cs` — opens the window and handles theme switching.
-- `MainView.cs` — the window content (reads two WinRT values). **Edit `Build()` to start building your UI**, and call
-  any `Windows.*` or `Microsoft.Windows.*` API you need.
+详见仓库的 [代码风格](../../docs/code-style.md) 和 [Sprout 迁移审查](../../docs/sprout-upgrade-review.md)。

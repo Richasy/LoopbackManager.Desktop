@@ -2,35 +2,27 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <!-- A -windows TFM turns on the WinRT projection of the OS, so this Sprout app can also call Windows platform APIs
-         (and the Windows App SDK below). Sprout itself is plain net10.0 and is consumed as a package, so it works
-         unchanged from here. 10.0.19041.0 is Sprout's minimum Windows version. -->
+    <!-- OS WinRT APIs and the Windows 10 2004 minimum supported by Sprout. -->
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>preview</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <!-- Per-app warning suppressions: append your own codes here (e.g. <NoWarn>$(NoWarn);CA1416</NoWarn>). Empty by
-         default; the $(NoWarn) preserves anything inherited from a Directory.Build.props. -->
-    <NoWarn>$(NoWarn)</NoWarn>
-
-    <!-- The app icon, embedded into the .exe as its Win32 icon resource (Explorer / taskbar). At runtime, a Sprout
-         window with no explicit WindowSpec.Icon defaults to this same embedded icon, so the window shows it too. -->
+    <!-- Sprout also uses the embedded executable icon for the window and taskbar. -->
     <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
 
-    <!-- NativeAOT: `dotnet publish -r win-x64` produces one self-contained native .exe. -->
+    <!-- Publishing compiles native code and packages the same output as MSIX. -->
     <PublishAot>true</PublishAot>
     <SproutPackageFormat>Msix</SproutPackageFormat>
+    <SproutAppxVersion>2.2609.6.0</SproutAppxVersion>
 
-    <!-- Windows App SDK, self-contained + unpackaged: the WinAppSDK runtime is bundled next to the app, so there is no
-         runtime to install, no bootstrapper, and no MSIX requirement — the app stays "just run the .exe" (Sprout's
-         model). MSIX is still opt-in (the packaging option / Sprout.Packaging), which packs this same output. -->
+    <!-- Bundle the non-UI runtime used by ApplicationData; Debug runs unpackaged, Release uses package identity. -->
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <!-- Self-contained needs a concrete architecture: default the inner-loop RID to the host's so `dotnet build`/`run`
-         work; `dotnet publish -r win-x64` (or win-arm64) overrides it. -->
+    <!-- An explicit publish RID overrides the host architecture used for development. -->
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
     <SproutDefaultLanguage>en-US</SproutDefaultLanguage>
+    <SproutVersion>0.1.0-rodel.105.1.g5af5aae144af</SproutVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -51,23 +43,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The Windows App SDK FOUNDATION feature area only — the non-UI platform APIs (app lifecycle, resources,
-         environment, power, windowing/composition/input OS support). It deliberately does NOT reference
-         Microsoft.WindowsAppSDK.WinUI, so no WinUI XAML is pulled in: Sprout draws the UI itself. -->
-    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" Version="2.1.0" />
+    <!-- Foundation supplies Microsoft.Windows.Storage.ApplicationData. No WinUI dependency. -->
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" Version="2.3.12" />
+    <!-- Foundation's 2.1.8 minimum is unavailable; use the compatible published dependency explicitly. -->
+    <PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="2.1.9" />
 
-    <PackageReference Include="Sprout" Version="0.1.0-local.g449353c3d1e0" />
-    <PackageReference Include="Sprout.Backend.D2D" Version="0.1.0-local.g449353c3d1e0" />
+    <PackageReference Include="Sprout" Version="$(SproutVersion)" />
+    <PackageReference Include="Sprout.Backend.D2D" Version="$(SproutVersion)" />
 
-    <!-- The standalone Fluent System Icons package: Icon.Fluent(FluentSymbol.X, …) leaves (namespace Sprout.Controls). -->
-    <PackageReference Include="Sprout.FluentIcon" Version="0.1.0-local.g449353c3d1e0" />
-
-    <!-- The Sprout to WinRT interop glue (Foundation-only, no WinUI): window.GetWindowId() / window.CreateFileOpenPicker()
-         / picker.InitializeWithWindow(window), bridging a Sprout window to the Windows App SDK window handles. -->
-    <PackageReference Include="Sprout.WindowsAppSDK" Version="0.1.0-local.g449353c3d1e0" />
-    <!-- Opt-in MSIX packaging: `dotnet publish -r win-x64` then also produces a signed .msix (the self-contained
-         WinAppSDK runtime is bundled inside it). No Windows App SDK MSIX tooling — the same Sprout packer is used. -->
-    <PackageReference Include="Sprout.Packaging" Version="0.1.0-local.g449353c3d1e0" />
+    <PackageReference Include="Sprout.FluentIcon" Version="$(SproutVersion)" />
+    <PackageReference Include="Sprout.Packaging" Version="$(SproutVersion)" />
   </ItemGroup>
 
 </Project>

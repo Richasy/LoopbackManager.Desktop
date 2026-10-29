@@ -4,8 +4,7 @@ using Sprout;
 namespace LoopbackManager.Shell;
 
 /// <summary>
-/// The application. <see cref="OnLaunched"/> opens a Mica window, points it at a reactive view, and shows it. The
-/// window follows the system light/dark theme; press <b>Ctrl+T</b> to cycle System → Light → Dark.
+/// Opens the system-themed window and restores its last placement.
 /// </summary>
 public sealed class App : Application
 {
@@ -34,9 +33,7 @@ public sealed class App : Application
         _window.SetContent(new AppRoot());
         _window.Show();
 
-        // Kick off the initial load on startup (fire-and-forget): the shared store flips Apps Idle → Loading →
-        // Success/Error, and every section reading it (the list via FilteredApps, the header/footer via CanSave etc.)
-        // re-renders through the store's signals.
+        // The store captures startup failures for the retryable error view.
         _ = Application.Current.Services.GetRequiredService<AppStore>().ReloadAsync();
     }
 

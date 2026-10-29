@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <!-- The headless test assembly is not a package; do not index MSTest satellite DLLs into a Windows PRI. -->
+    <AppxGeneratePriEnabled>false</AppxGeneratePriEnabled>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>

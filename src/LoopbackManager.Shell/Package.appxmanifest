@@ -14,7 +14,7 @@
     with your signing certificate. Replace the files under Assets\ to re-brand.
   -->
 
-  <Identity Name="Richasy.LoopbackManager" Publisher="CN=Richasy" Version="1.0.0.0" />
+  <Identity Name="Richasy.LoopbackManager" Publisher="CN=Richasy" Version="2.2609.6.0" />
 
   <Properties>
     <DisplayName>ms-resource:AppName</DisplayName>

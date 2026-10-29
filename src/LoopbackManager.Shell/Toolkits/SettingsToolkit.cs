@@ -7,52 +7,22 @@ internal static class SettingsToolkit
     /// <summary>
     /// Read local setting.
     /// </summary>
-    /// <typeparam name="T">Type of read value.</typeparam>
     /// <param name="settingName">Setting name.</param>
     /// <param name="defaultValue">Default value provided when the setting does not exist.</param>
     /// <returns>Setting value obtained.</returns>
-    public static T ReadLocalSetting<T>(string settingName, T defaultValue)
+    public static string ReadLocalSetting(string settingName, string defaultValue)
     {
-        var settingContainer = GetSettingContainer();
-
-        if (IsSettingKeyExist(settingName))
-        {
-            if (defaultValue is Enum)
-            {
-                var tempValue = settingContainer.Values[settingName]?.ToString();
-                if (tempValue is not null && Enum.TryParse(typeof(T), tempValue, out var result) && result is not null)
-                {
-                    return (T)result;
-                }
-
-                return defaultValue;
-            }
-            else
-            {
-                return (T)settingContainer.Values[settingName];
-            }
-        }
-        else
-        {
-            WriteLocalSetting(settingName, defaultValue);
-            return defaultValue;
-        }
+        var values = GetSettingContainer().Values;
+        return values.TryGetValue(settingName, out var value) && value is string text ? text : defaultValue;
     }
 
     /// <summary>
     /// Write local setting.
     /// </summary>
-    /// <typeparam name="T">Type of written value.</typeparam>
     /// <param name="settingName">Setting name.</param>
     /// <param name="value">Setting value.</param>
-    public static void WriteLocalSetting<T>(string settingName, T value)
-    {
-        var settingContainer = GetSettingContainer();
-        settingContainer.Values[settingName] = value is Enum ? value.ToString() : value;
-    }
-
-    private static bool IsSettingKeyExist(string settingName)
-        => GetSettingContainer().Values.ContainsKey(settingName);
+    public static void WriteLocalSetting(string settingName, string value)
+        => GetSettingContainer().Values[settingName] = value;
 
     private static ApplicationDataContainer GetSettingContainer()
     {

@@ -12,14 +12,8 @@ using static Sprout.Markup;
 namespace LoopbackManager.Shell.Controls;
 
 /// <summary>
-/// The scrolling, virtualized app list with its four load phases. It reads the shared <see cref="AppStore"/> ambiently
-/// and overlays the phase views — a virtualized <c>ItemsRepeater</c> of <see cref="AppCard"/> rows when the load
-/// succeeded with results, a centered spinner while loading, a retryable error, and an empty-state message — each shown
-/// by <c>.Visible</c> off the store's reactive phase flags, so a load settling or a filter change re-renders the right
-/// one. The <c>ScrollView</c> always participates in layout, including while its repeater is empty, so its native input
-/// host is established once instead of joining the composition tree only when loading finishes. Because
-/// <see cref="AppCard"/> is a <c>Control</c> (a live checkbox + open-folder button per row), it goes in through the
-/// two-closure <c>ItemsRepeater</c> overload; only a screenful is realized.
+/// Virtualizes app rows and overlays loading, failure, or empty states. Keep the scroller mounted while empty so
+/// its native input host is established before the initial load completes.
 /// </summary>
 public sealed partial class AppList : Control
 {
@@ -36,12 +30,13 @@ public sealed partial class AppList : Control
     // The empty-state text distinguishes "no apps at all" from "the filter matched nothing".
     private string EmptyMessage => string.IsNullOrWhiteSpace(_store.Filter) ? Resources.NoApps : Resources.NoSearchResults;
 
-    public Ui Body => Overlay(
+    public Ui Body => Overlay([
         ScrollView(
             ItemsRepeater(
                 _store.FilteredApps,
+                static itemStore => itemStore.Sid,
                 static itemStore => new AppCard(itemStore),
-                static (card, itemStore) => { },
+                static (card, itemStore) => card.SetItem(itemStore),
                 new UniformGridLayout
                 {
                     ItemWidth = 320f,
@@ -51,36 +46,16 @@ public sealed partial class AppList : Control
                     ItemsStretch = UniformGridItemsStretch.Fill,
                 })
                 .Margin(new Thickness(0f, 0f, 0f, 8f))
-            )
-            .Vertical(ScrollMode.Auto)
-            .HorizontalScrollBar(ScrollBarVisibility.Hidden)
-            .Padding(12f, 0f),
-        Stack(
+            ).Vertical(ScrollMode.Auto).HorizontalScrollBar(ScrollBarVisibility.Hidden).Padding(12f, 0f),
+        Column([
             ProgressRing(new Size(32f, 32f)).HAlign(HorizontalAlignment.Center),
-            Text(Resources.Loading)
-                .Foreground(Theme.Resolve().Colors.TextFillColorSecondary)
-                .HAlign(HorizontalAlignment.Center))
-            .Spacing(12f)
-            .HAlign(HorizontalAlignment.Center)
-            .VAlign(VerticalAlignment.Center)
-            .Visible(ShowLoading),
-        Stack(
-            Text(Resources.LoadFailed)
-                .Style(TextStyles.BodyStrong)
-                .Align(TextAlignment.Center)
-                .HAlign(HorizontalAlignment.Center),
-            Text(LoadFailureGuidance)
-                .Foreground(Theme.Resolve().Colors.TextFillColorSecondary)
-                .Wrap()
-                .Align(TextAlignment.Center)
-                .Width(480f)
-                .HAlign(HorizontalAlignment.Center),
+            Text(Resources.Loading).Foreground(Brush.Theme(ThemeColorToken.TextFillColorSecondary)).HAlign(HorizontalAlignment.Center)
+        ]).Spacing(12f).HAlign(HorizontalAlignment.Center).VAlign(VerticalAlignment.Center).Visible(ShowLoading),
+        Column([
+            Text(Resources.LoadFailed).Style(TextStyles.BodyStrong).Align(TextAlignment.Center).HAlign(HorizontalAlignment.Center),
+            Text(LoadFailureGuidance).Foreground(Brush.Theme(ThemeColorToken.TextFillColorSecondary)).Wrap().Align(TextAlignment.Center).Width(480f).HAlign(HorizontalAlignment.Center),
             Border(
-                Text(LoadFailureDetails)
-                    .Foreground(Theme.Resolve().Colors.TextFillColorSecondary)
-                    .Style(TextStyles.Caption)
-                    .Wrap()
-                    .Align(TextAlignment.Leading))
+                Text(LoadFailureDetails).Foreground(Brush.Theme(ThemeColorToken.TextFillColorSecondary)).Style(TextStyles.Caption).Wrap().Align(TextAlignment.Leading))
                 .Background(Brush.Theme(ThemeColorToken.CardBackgroundFillColorDefault))
                 .BorderBrush(Brush.Theme(ThemeColorToken.CardStrokeColorDefault))
                 .BorderThickness(1f)
@@ -88,23 +63,14 @@ public sealed partial class AppList : Control
                 .Padding(12f, 8f)
                 .Width(480f)
                 .HAlign(HorizontalAlignment.Center),
-            HyperlinkButton(Resources.Retry, HyperlinkButtonPalette.FromTheme(Theme.Resolve().Colors))
-                .OnClick(OnRetry)
-                .Automation(new()
+            HyperlinkButton(Resources.Retry).OnClick(OnRetry).Automation(new()
                 {
                     Name = Resources.Retry,
                     AutomationId = "RetryLoadButton",
-                })
-                .HAlign(HorizontalAlignment.Center))
-            .Spacing(8f)
-            .HAlign(HorizontalAlignment.Center)
-            .VAlign(VerticalAlignment.Center)
-            .Visible(_store.Apps.IsError),
-        Text(EmptyMessage)
-            .Foreground(Theme.Resolve().Colors.TextFillColorSecondary)
-            .HAlign(HorizontalAlignment.Center)
-            .VAlign(VerticalAlignment.Center)
-            .Visible(ShowEmpty));
+                }).HAlign(HorizontalAlignment.Center)
+        ]).Spacing(8f).HAlign(HorizontalAlignment.Center).VAlign(VerticalAlignment.Center).Visible(_store.Apps.IsError),
+        Text(EmptyMessage).Automation(new() { Name = EmptyMessage, AutomationId = "EmptyStateMessage" }).Foreground(Brush.Theme(ThemeColorToken.TextFillColorSecondary)).HAlign(HorizontalAlignment.Center).VAlign(VerticalAlignment.Center).Visible(ShowEmpty),
+    ]);
 
     private string LoadFailureGuidance => _store.LoadFailure.Kind switch
     {

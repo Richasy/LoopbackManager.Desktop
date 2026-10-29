@@ -1,4 +1,4 @@
-namespace LoopbackManager.Shell;
+﻿namespace LoopbackManager.Shell;
 
 /// <summary>Non-fatal diagnostics produced while enumerating AppContainers.</summary>
 /// <param name="UsedFallback">Whether the FirewallAPI batch failed and per-package enumeration was used.</param>

@@ -1,0 +1,18 @@
+[
+  { "op": "find", "automationId": "RefreshButton" },
+  { "op": "waitUntilEnabled", "value": true },
+  { "op": "find", "automationId": "SaveButton" },
+  { "op": "expectEnabled", "value": false },
+  { "op": "find", "automationId": "AppSearchBox" },
+  { "op": "setValue", "text": "__sprout_upgrade_no_app__" },
+  { "op": "expectValue", "text": "__sprout_upgrade_no_app__" },
+  { "op": "find", "automationId": "EmptyStateMessage" },
+  { "op": "find", "automationId": "AppSearchBox" },
+  { "op": "setValue", "text": "" },
+  { "op": "expectValue", "text": "" },
+  { "op": "find", "automationId": "RefreshButton" },
+  { "op": "invoke" },
+  { "op": "waitUntilEnabled", "value": true },
+  { "op": "find", "automationId": "SaveButton" },
+  { "op": "expectEnabled", "value": false }
+]
